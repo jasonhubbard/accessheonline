@@ -1,0 +1,1 @@
+<span id='learndash_course_status' class="<?php echo learndash_course_status($post->ID, null) ?>"><strong><?php _e('Course Status:', 'learndash') ?></strong> <?php echo learndash_course_status($post->ID, null) ?></span>

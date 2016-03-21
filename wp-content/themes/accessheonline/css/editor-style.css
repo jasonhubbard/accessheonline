@@ -1,0 +1,59 @@
+/*------------------------------------*\
+    VARIABLES
+\*------------------------------------*/
+/*------------------------------------*\
+    MIXINS
+\*------------------------------------*/
+html {
+  font-size: 62.5%;
+}
+body#tinymce.wp-editor {
+  font-size: 1.7em;
+  /* currently ems cause chrome bug misinterpreting rems on body element */
+  line-height: 1.4;
+  font-weight: 400;
+  font-family: "CalibriRegular", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #2f3740;
+}
+body#tinymce.wp-editor a {
+  color: #007cd4;
+  text-decoration: none;
+}
+/* Module styles */
+.module-instruction {
+  color: #2fbd54;
+  font-weight: bold;
+  font-size: 2rem;
+}
+blockquote.module-article footer {
+  border: solid #dfe0e0;
+  border-width: 1px 0;
+  padding: 15px 0;
+}
+/* Typography */
+.definition {
+  cursor: help;
+  border-bottom: 1px dotted;
+}
+/* Fonts */
+@font-face {
+  font-family: 'CalibriRegular';
+  src: url('../fonts/calibri-webfont.eot');
+  src: url('../fonts/calibri-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/calibri-webfont.woff') format('woff'), url('../fonts/calibri-webfont.ttf') format('truetype'), url('../fonts/calibri-webfont.svg#CalibriRegular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'CalibriBold';
+  src: url('../fonts/calibrib-webfont.eot');
+  src: url('../fonts/calibrib-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/calibrib-webfont.woff') format('woff'), url('../fonts/calibrib-webfont.ttf') format('truetype'), url('../fonts/calibrib-webfont.svg#CalibriBold') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'CalibriItalic';
+  src: url('../fonts/calibrii-webfont.eot');
+  src: url('../fonts/calibrii-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/calibrii-webfont.woff') format('woff'), url('../fonts/calibrii-webfont.ttf') format('truetype'), url('../fonts/calibrii-webfont.svg#CalibriItalic') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}

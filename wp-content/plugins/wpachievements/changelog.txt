@@ -1,0 +1,79 @@
+v1.00 - 2013-08-12
+  - Initial Release
+
+v1.10 - 2013-09-03
+  - Fixed: Several minor bugs
+  - Added: Improved custom image upload
+  - Added: Greatly improved Achievements Popup
+
+v1.11 - 2013-09-05
+  - Fixed: Several minor bugs
+  
+v1.12 - 2013-09-21
+  - Fixed: Several minor bugs
+  - Added: Massively improved AJAX handling
+  - Added: Ability to only show the latest of each achievement type
+  
+v1.13 - 2013-09-29
+  - Fixed: Several minor bugs
+
+v1.14 - 2013-10-01
+  - Fixed: Achievement shortcode always displaying "No Achievements Yet!"
+  
+v1.15 - 2013-10-02
+  - Fixed: Bug where users points are reset on editting their profile
+  
+v2.00 - 2013-11-28
+  - Fixed: New user registering trigger not always firing
+  - Fixed: Achievement popup timing acting too quickly
+  - Fixed: Achievement popups not using custom colours
+  - Changed: Sidebar removed from Achievements page template
+  - Added: Improved post visit handling
+  - Added: Multiple new hooks
+  - Added: Improved Facebook login functionality
+  - Added: Shortcode for Facebook login buttons
+  - Added: Users activity gets removed when they are deleted
+  - Added: New achievements creation interface
+  - Added: Improved achievement handling
+  - Added: Ability to share achievements via Twitter as well as Facebook
+  - Added: Ability to show sharing buttons on achievement popups
+  - Added: Ability to add a custom Achievements page template to theme files
+  - Added: Ability to award points and achievements for user logging in
+  - Added: myCRED integration
+  - Added: Improved CubePoints integration
+  - LearnDash: Ability to only gain 100% achievement on first try
+  - LearnDash: Quiz related achievements now only used the Quiz ID's
+  
+v2.01 - 2013-12-09
+  - Fixed: Call to undefined element
+  
+v2.02 - 2014-01-21
+  - Fixed: Upgrade notice now only appears on WPAchievement pages
+  - WPCourseware: Achievements can now be linked to specific Modules/Courses
+  
+v2.03 - 2014-03-02
+  - Fixed: Setting area conflict with multiple themes
+
+v2.04 - 2014-04-02
+  - Fixed: WPAchievements data not being fully removed when plugin is deleted
+
+v2.05 - 2014-04-03
+  - Fixed: Issue achievement with popups appearing twice
+
+v2.06 - 2014-04-18
+  - Added: Improved compatibility with WordPress 3.9
+
+v3.00 - 2014-05-22
+  - Changed: Shortcode wpa_leaderboard now produces an advanced leaderboard data table
+  - Changed: Basic unformatted leaderboard list now uses shortcode wpa_leaderboard 
+  - Changed: Achievements now only count activity from the time the achievement is created
+  - Fixed: myCRED now uses updated function
+  - Fixed: Activities not being counted correctly with myCRED
+  - Fixed: Issue with some achievements not triggering if points are not given for triggers
+  - Fixed: Activities not displaying in the admin bar when myCRED is active
+  - Fixed: Leaderboards not displaying correct points when myCRED or CubePoints are active
+  - Added: Support for new versions of MyArcadePlugin
+  - Added: Ability to hide admins from leaderboards
+  - Added: Integration with WordPress Heartbeat API
+  - Added: Ability to make achievements repeatable so users can gain them multiple times
+  - Added: Shortcode information page

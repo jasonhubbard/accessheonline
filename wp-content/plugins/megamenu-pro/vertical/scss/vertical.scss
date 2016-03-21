@@ -1,0 +1,107 @@
+#{$wrap} {
+
+	#{$menu}.mega-menu-vertical {
+
+		// top level items
+		> li.mega-menu-item {
+	    	display: list-item;
+	    	margin: 0;
+	    	clear: both;
+	    	width: 100%;
+	    	margin: 0 0 $menu_item_spacing 0;
+	    }
+
+		@if unit($panel_width) == '%' {
+			> li.mega-menu-megamenu > ul.mega-sub-menu {
+				width: 600px;
+			}
+		}
+
+		> li.mega-menu-megamenu.mega-menu-item,
+		> li.mega-menu-flyout.mega-menu-item {
+		    position: relative;
+		}
+
+		// arrows
+		@media only screen and (min-width : $responsive_breakpoint) {
+
+			li.mega-align-bottom-right.mega-menu-item-has-children,
+			li.mega-align-bottom-right.mega-menu-flyout li.mega-menu-item-has-children {
+
+				a {
+				    text-align: left;
+				}
+
+				> a:after {
+				    content: $arrow_right;
+				    float: right;
+				    margin: 0;
+				}
+
+			}
+
+			li.mega-align-bottom-left.mega-menu-item-has-children,
+			li.mega-align-bottom-left.mega-menu-flyout li {
+
+				> a {
+					text-align: right;
+				}
+
+				> a:after {
+				    content: $arrow_left;
+				    float: left;
+				    margin: 0;
+				}
+
+				> a:before {
+				    float: right;
+				    margin: 0 0 0 6px;
+				}
+
+			}
+		}
+
+
+		li.mega-menu-megamenu.mega-align-bottom-right {
+		    > ul.mega-sub-menu {
+				top: 0;
+				left: 100%;
+				right: auto;
+			}
+		}
+
+		li.mega-menu-flyout.mega-align-bottom-right,
+		li.mega-menu-flyout.mega-align-bottom-right li.mega-menu-item,
+		li.mega-menu-flyout.mega-align-bottom-right ul.mega-sub-menu li.mega-menu-item {
+		    ul.mega-sub-menu {
+				top: 0;
+				left: 100%;
+				right: auto;
+			}
+
+			a:before {
+			    float: left;
+			    margin: 0 6px 0 0;
+			}
+		}
+
+		li.mega-menu-megamenu.mega-align-bottom-left {
+			> ul.mega-sub-menu {
+				top: 0;
+				left: auto;
+				right: 100%;
+			}
+		}
+
+		li.mega-menu-flyout.mega-align-bottom-left,
+		li.mega-menu-flyout.mega-align-bottom-left li.mega-menu-item,
+		li.mega-menu-flyout.mega-align-bottom-left li.mega-menu-item ul.mega-sub-menu li.mega-menu-item {
+			> ul.mega-sub-menu {
+				top: 0;
+				left: auto;
+				right: 100%;
+			}
+		}
+
+	}
+}

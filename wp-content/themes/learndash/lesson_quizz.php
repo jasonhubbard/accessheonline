@@ -1,0 +1,1 @@
+<div><a class='<?php echo $class ?>' href='<?php echo get_permalink( $post->ID ) ?>'><?php echo $post->post_title ?></a></div>

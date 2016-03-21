@@ -1,0 +1,341 @@
+/* 
+	-------------------------------------------------- 
+   	NMBS default
+	-------------------------------------------------- 
+	Table of Contents
+
+		1. UX
+			:: html, body
+			:: typography
+			:: icons
+			:: buttons
+			:: forms
+			:: carousel
+			:: accordion
+			:: navbar
+			:: img
+			:: thumbnail
+			:: wordpress
+		
+		2. RESPONSIVE
+
+
+	-------------------------------------------------- 
+*/
+
+/* -----------------------------------------------------------------------
+	1. UX
+------------------------------------------------------------------------ */
+
+/* -----------------------------------------
+	html, body
+----------------------------------------- */
+body,
+input,
+textarea{
+	font-family: 'Open Sans', sans-serif;
+}
+
+/* -----------------------------------------
+	typography
+----------------------------------------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	
+}
+
+	h1.subheader,
+	h2.subheader,
+	h3.subheader,
+	h4.subheader,
+	h5.subheader,
+	h6.subheader {
+
+	}
+
+a {
+	-webkit-transition: background 200ms ease-in, color 200ms ease-in;
+	-moz-transition: background 200ms ease-in, color 200ms ease-in;
+	-o-transition: background 200ms ease-in, color 200ms ease-in;
+	transition: background 200ms ease-in, color 200ms ease-in;
+}
+
+a:hover,
+a:focus {
+
+}
+
+h1 a:hover,
+h2 a:hover,
+h3 a:hover,
+h4 a:hover,
+h5 a:hover,
+h6 {
+	text-decoration: none;
+}
+
+a.thumbnail:hover,
+a.thumbnail:focus {
+
+}
+
+/* -----------------------------------------
+	buttons
+----------------------------------------- */
+
+/* -----------------------------------------
+	icons
+----------------------------------------- */
+.icon{
+	display: inline-block;
+}
+
+	.i-16{
+		font-size: 16px
+	}
+
+	.i-24{
+		font-size: 24px
+	}
+
+	.i-32{
+		font-size: 32px
+	}
+
+	.i-48{
+		font-size: 48px
+	}
+
+	.i-64{
+		font-size: 64px
+	}
+
+	.i-96{
+		font-size: 96px
+	}
+	.i-128{
+		font-size: 128px
+	}
+
+	.icon.circle{
+		-webkit-border-radius: 500px;
+		-moz-border-radius: 500px;
+		border-radius: 500px;
+	}
+
+	.i-16.circle{
+		padding: 8px;
+	}
+
+	.i-24.circle{
+		padding: 12px;
+	}
+
+	.i-32.circle{
+		padding: 16px;
+	}
+
+	.i-48.circle{
+		padding: 24px;
+	}
+
+	.i-64.circle{
+		padding: 32px;
+	}
+
+	.i-96.circle{
+		padding: 32px;
+	}
+
+	.i-128.circle{
+		padding: 48px;
+	}
+
+		.circle{
+			color:#fff;
+		}
+
+		a:hover .circle.orange{
+			background: #ee8825;
+			color:#fff;
+			border-color: #ee8825;
+		}
+
+		a:hover .circle.blue{
+			background: #8abfec;
+		}
+
+		.light-blue{
+			color: #8abfec;
+		}
+
+
+a .icon{
+	vertical-align: -20%;
+}
+
+/* -----------------------------------------
+	forms
+----------------------------------------- */
+form{
+	margin: 0;
+}
+
+textarea{
+	min-height: 70px !important;
+	resize:vertical;
+}
+
+/* -----------------------------------------
+	carousel
+----------------------------------------- */
+
+
+/* -----------------------------------------
+	accordion
+----------------------------------------- */
+
+	
+
+/* -----------------------------------------
+	navbar
+----------------------------------------- */
+.navbar-brand {
+	margin-top: 15px;
+	margin-bottom: 15px;
+	padding: 0 15px;
+}
+
+.navbar-brand.image {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	-webkit-transition: opacity 200ms ease-in;
+	-moz-transition: opacity 200ms ease-in;
+	-o-transition: opacity 200ms ease-in;
+	transition: opacity 200ms ease-in;
+}
+
+.navbar-brand.image:hover {
+	opacity: 0.7;
+}
+
+
+/* -----------------------------------------
+	navbar
+----------------------------------------- */
+img{
+	height: auto;
+	max-width: 100%;
+}
+
+/* -----------------------------------------
+	thumbnail
+----------------------------------------- */
+.thumbnail{
+	margin-bottom: 30px;
+}
+
+/* -----------------------------------------
+	wordpress
+----------------------------------------- */
+#content{
+	margin-bottom: 60px;
+}
+
+	#secondary{
+		margin-top: 40px;
+	}
+		.widget-title.panel-heading{
+			font-size: 14px;
+			margin-top: 0;
+			margin-bottom: 0;
+		}
+
+	article.type-post,
+	article.type-page{
+		margin-bottom: 60px;
+	}
+
+	.page-header {
+		word-break: break-word;
+	}
+
+	.comment-list{
+		margin-bottom: 30px;
+		margin-top: 30px;
+		padding:0;
+	}
+		.comment-body{
+			border-bottom: 1px solid #e5e5e5;
+			margin-bottom: 20px; 
+			padding-bottom: 10px; 
+		}
+
+.alignleft{
+	float: left;
+	margin-right: 20px;
+	margin-bottom: 20px;
+}
+
+.alignright{
+	float: right;
+	margin-left: 20px;
+	margin-bottom: 20px;
+}
+
+.clear {
+	clear: both;
+}
+
+.nmbs_social>a{
+	display: inline-block;
+	margin: 5px;
+}
+
+/* -----------------------------------------------------------------------
+	2. RESPONSIVE
+------------------------------------------------------------------------ */
+
+@media (min-width: 768px) and (max-width: 979px) {
+	.navbar .navbar-form{
+		margin-right: -15px;
+		padding-right: 0;
+		margin-left: 15px;
+	}
+	.navbar .navbar-nav-login{
+		margin-left: 15px;
+	}
+}
+
+@media (max-width: 767px) {
+	.navbar .navbar-form button{
+		display: none;
+	}
+	.comment-list .children{
+		padding-left: 0;
+	}
+}
+
+@media (max-width: 480px) {
+		
+}
+
+@media (max-width: 979px) {
+	
+}
+
+@media (min-width: 980px) {
+	.navbar .navbar-form{
+		margin-right: -15px;
+		padding-right: 0;
+		margin-left: 15px;
+	}
+
+	.navbar .navbar-nav-login{
+		margin-left: 15px;
+	}
+}

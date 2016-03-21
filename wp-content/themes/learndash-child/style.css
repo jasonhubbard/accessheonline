@@ -1,0 +1,38 @@
+/*
+Theme Name:   Learndash Child
+Theme URI:   http: //learndash.com/
+Description:  Child theme for Learndash
+Author:     LearnDash
+Author URI: http: //learndash.com/
+Template:    learndash
+*/
+
+@import url("../learndash/style.css"); 
+
+/* General */
+
+#learndash_lessons .completed:before, #learndash_lessons .notcompleted:before, #learndash_lessons .notavailable:before, #learndash_quizzes .completed:before, #learndash_quizzes .notavailable:before, #learndash_quizzes .notcompleted:before{
+	left: auto !important;
+	right: 0 !important;
+}
+
+#lessons_list > div h4, #course_list > div h4, #quiz_list > div h4, #learndash_lesson_topics_list ul > li > span.topic_item{
+	width: 100% !important;
+}
+
+.entry-content .learndash .topic-notcompleted b, .entry-content .learndash .topic-completed b{
+	display: none;
+}
+
+/* Quiz */
+
+.wpProQuiz_question_text{
+	font-weight: bold;
+	margin-top: 30px;
+	display: block;
+}
+
+
+.wpProQuiz_question_text p{
+	display: inline; /* Align question with number
+}

@@ -1,0 +1,802 @@
+/*
+	Theme Name: AccessHE Online
+	Version: 1.0.0
+	Author: Jason Hubbard
+	Author URI: http://www.jmjwebdesign.uk
+
+	License: MIT
+	License URI: http://opensource.org/licenses/mit-license.php
+*/
+
+@import "css/library";
+
+/*------------------------------------*\
+    STRUCTURE
+\*------------------------------------*/
+
+/* wrapper */
+.wrapper {
+	max-width:1280px;
+	width:95%;
+	margin:0 auto;
+	position:relative;
+}
+/* header */
+.header {
+-webkit-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.05);
+-moz-box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.05);
+box-shadow: 0px 3px 5px 0px rgba(0,0,0,0.05);
+margin-bottom: 55px;
+padding-top: 22px;
+padding-bottom: 22px;
+
+	.logo{
+		font-weight: bold;
+		
+		.logo-img{
+			float: left;
+		}
+		
+		.tagline{
+			float: left;
+			margin: 23px 0 0 20px;
+		}
+	}
+	
+	#mega-menu-wrap-header-menu #mega-menu-header-menu{
+		margin-top: 15px;
+	}
+	
+	@media (max-width: 959px) {
+		
+		.columns, .column{
+			width: 100% !important;
+		}
+		
+		#mega-menu-wrap-header-menu #mega-menu-header-menu{
+			text-align: left;
+			margin-left: 30px;
+			margin-top: 20px;
+		}
+		
+	}
+}
+
+/* Nav */
+
+li.mega-my-courses a{
+	background: url(img/my-courses.png) no-repeat !important;
+	background-size: 80px 40px !important;
+	background-position: 0 3px !important;
+	display: inline-block;
+	height: 40px !important;
+	width: 40px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	text-indent: -999px;
+	position: absolute !important;
+	top: -38px !important;
+	left: 10px !important;
+	
+	&:hover{
+		background-position: -40px 3px !important;
+	}
+}
+
+@media (min-width: 750px) {
+	li.mega-my-courses a{
+		top: -26px !important;
+		left: -30px !important;
+	}
+}
+
+li.mega-my-courses.mega-current-menu-item a{
+	background-position: -40px 3px !important;
+}
+
+/* General */
+
+.inner-spacer{
+		padding: 15px 20px;
+		position: relative;
+	}
+
+@media (min-width: 750px) {
+	.inner-spacer{
+		padding: 40px 60px;
+		position: relative;
+	}
+}
+
+#learndash_lessons .completed:before, #learndash_lessons .notcompleted:before, #learndash_lessons .notavailable:before, #learndash_quizzes .completed:before, #learndash_quizzes .notavailable:before, #learndash_quizzes .notcompleted:before{
+	left: auto !important;
+	right: 0 !important;
+}
+
+#lessons_list > div h4, #course_list > div h4, #quiz_list > div h4, #learndash_lesson_topics_list ul > li > span.topic_item{
+	width: 100% !important;
+}
+
+.entry-content .learndash .topic-notcompleted b, .entry-content .learndash .topic-completed b{
+	display: none;
+}
+
+/* footer */
+.footer {
+	background-color: @bgcolor;
+	margin-top: 50px;
+	
+	.container{
+		padding-top: 50px;
+		background: url(img/large-arrows.png) no-repeat;
+		background-size: auto 80%;
+		background-position: 100% 50%;
+		height: 360px;
+		
+		ul#menu-footer-menu{
+			list-style: none;
+			
+			li{
+				display: inline;
+				margin: 0 20px 0 0;
+				
+				a{
+					text-decoration: none;
+					font-size: 1.8rem;
+					padding: 0 10px;
+					
+					&:hover{
+						color: @bodycolor;
+					}
+				}
+			}
+		}
+		
+		.logo-img{
+			margin: 40px 0 20px;
+		}
+		
+		.copyright{
+			font-size: 1.4rem;
+		}
+		
+	}
+}
+
+
+/*------------------------------------*\
+    Course pages
+\*------------------------------------*/
+
+/* Course overview */
+
+.course-title{
+	background-image: url(img/course-header.jpg);
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	color: #fff;
+	margin-bottom: 12px;
+	
+}
+
+.course-title.course-title-slim{
+	min-height: 0;
+	
+	h1{
+		margin: 20px 0;
+	}
+}
+
+@media (min-width: 750px) {
+	.course-title{
+		background-image: url(img/large-arrows.png), url(img/course-header.jpg);
+		background-size: 30% auto, cover;
+		background-position: 95% 50%, center;
+		min-height: 390px;
+		
+		h1{
+			margin-top: 60px;
+		}
+	}
+	
+	.course-title.course-title-slim{
+		background-size: auto 130px, cover;
+		
+		h1{
+			max-width: 60%;
+		}
+	}
+}
+
+
+#learndash_course_status{
+	position: absolute;
+	top: 40px;
+	right: 60px;
+	color: @secondary;
+	
+	b{
+		color: @bodycolor;
+	}
+}
+
+.course-content{
+	background: @bgcolor;
+	overflow: auto;
+	margin-bottom: 1em;
+}
+
+.course-logo{
+	text-align: center;
+	
+	img{
+		width: 65%;
+		height: auto;
+	}
+}
+
+#learndash_course_materials, #learndash_course_content{
+	border-top: 1px solid #cfcfcf;
+	padding-top: 30px;
+	margin-top: 30px;
+}
+
+#learndash_course_content{
+	
+	#learndash_lessons{
+		background: none;
+		
+		a{
+			font-size: 1.5rem !important;
+			color: @primary !important;
+		}
+		
+		#lesson_heading{
+			display: none;
+		}
+		
+		.list-count{
+			font-size: 1.5rem;
+			color: #969797;
+		}
+	}
+}
+
+#learndash_lessons, #learndash_quizzes, #learndash_profile, #learndash_lesson_topics_list > div, #lessons_list > div h4, #lessons_list > div > div{
+	border: none !important;
+}
+
+#lessons_list .is_sample{
+	background: #fff;
+}
+
+/*widen space for number */ #lessons_list > div > div{
+	width: 8% !important;
+}
+
+#lessons_list > div h4{
+	width: 92% !important;
+}/* end */
+
+#learndash_lessons #lesson_heading, #learndash_profile .learndash_profile_heading, #learndash_quizzes #quiz_heading, #learndash_lesson_topics_list div > strong{
+	background: none !important;
+	font-size: 2.5rem !important;
+}
+
+
+.widget_ldcoursenavigation{
+	h3{
+		font-size: 1.7rem;
+		font-weight: bold;
+		background: @bgcolor;
+		padding: 10px 15px;
+	}
+	
+	#course_navigation{
+		margin: 0 15px;
+		
+		a{
+			font-size: 1.7rem !important;
+		}
+		
+		.learndash_topic_widget_list{
+			margin-top: 10px;
+		}
+		
+		.topic_item a span{
+			font-size: 1.4rem !important;
+		}
+	}
+}
+
+/* Session Modules table */
+
+#learndash_lesson_topics_list{
+	border-top: 1px solid #cfcfcf;
+	padding-top: 10px;
+	margin-top: 30px;
+	
+	div > strong{
+		background: @bgcolor !important;
+		border: none !important;
+	}
+}
+
+/* Module article */
+
+.module-instruction, u{
+	color: @secondary;
+	font-weight: bold;
+	font-size: 2rem;
+	text-decoration: none;
+}
+
+blockquote.module-article{
+	margin: 0 0 80px;
+	padding: 0;
+	position: relative;
+	
+	h2{
+		color: @primary;
+		font-size: 2.5rem;
+		position: relative;
+		margin-top: 95px;
+		
+		&:before{
+			content: "\201C";
+			color: @primary;
+			font-family: Helvetica, Arial;
+			font-weight: bold;
+			font-size: 160px;
+			line-height: normal;
+			position: absolute;
+			top: -100px;
+			left: -5px;
+		}
+	}
+	
+	footer{
+		border: solid @disabled;
+		border-width: 1px 0;
+		padding: 15px 0;
+		
+		.avatar{
+			text-align: center;
+			
+			img{
+				-moz-border-radius: 64px;
+				-webkit-border-radius: 64px;
+				border-radius: 64px;
+				height: auto;
+				width: 120px;
+			}
+		}
+		
+		cite{
+			font-weight: bold;
+			font-style: normal;
+			font-size: 2rem;
+			display: inline-block;
+			margin: 1rem 0 .5rem;
+		}
+		
+		@media (min-width: 960px) {
+			cite{
+				margin-top: 2.5rem;
+			}
+		}
+	}
+	
+	&:after{
+			content: "\201D";
+			color: @primary;
+			font-family: Helvetica, Arial;
+			font-weight: bold;
+			font-size: 160px;
+			line-height: normal;
+			position: absolute;
+			bottom: -170px;
+			right: -5px;
+		}
+}
+
+/* Session progress */
+
+
+.learndash_topic_dots.type-dots{
+	margin-top: 5px;
+	margin-right: -20px;
+}
+
+@media (min-width: 960px) {
+	.learndash_topic_dots.type-dots{
+		float: right;
+	}
+}
+
+#learndash_back_to_lesson a{
+	background: @primary url(img/direction-arrow.png) no-repeat 20px 50%;
+	background-size: auto 18px;
+	color: #fff;
+	padding: 10px 15px 10px 50px;
+	display: block;
+	text-decoration: none;
+	margin-bottom: 30px;
+	font-size: 1.8rem;
+	line-height: 1.1;
+	
+	&:hover{
+		background-color: @secondary;
+	}
+}
+
+@media (min-width: 750px) {
+	#learndash_back_to_lesson a{
+		background-position: 60px 50%;
+		padding-left: 95px;
+	}
+}
+
+/* Buttons */
+
+#sfwd-mark-complete{
+	
+	input[type="submit"]{
+		background-image: url(img/completed.png);
+		background-repeat: no-repeat;
+		background-size: auto 75%;
+		background-position: 96% 50%;
+		text-align: center;
+		width: 100%;
+	}
+}
+
+#learndash_next_prev_link{
+	margin-top: 0 !important;
+		
+		a{
+			background: @disabled !important;
+			color: @bodycolor;
+			
+			&:hover{
+				color: #fff;
+			}
+		}
+}
+
+@media (min-width: 750px) {
+	
+	.module-nav-spacer, #sfwd-mark-complete{
+		margin-top: 23px;
+	}
+	
+	#sfwd-mark-complete{
+		float: left;
+		clear: both;
+		
+		input[type="submit"]{
+			text-align: left !important;
+			padding-right: 60px !important;
+			padding-left: 20px;
+			background-position: 93% 50%;
+		}
+	}
+	
+}
+
+#learndash_uploaded_assignments{
+	ul{
+		list-style: none;
+		padding: 0;
+		li{
+			a{
+				/* link styles added in skeleton.css */
+				text-decoration: none;
+			}
+		}
+	}
+}
+
+
+/* Quiz */
+
+#learndash_quizzes{
+	display: none !important; /* will need displaying again to view quiz url */
+}
+
+.wpProQuiz_questionList {
+    margin-bottom: 10px !important;
+    background: #fff !important;
+    border: none !important;
+    padding: 20px 5px !important;
+    list-style: none !important;
+	
+	input[type="radio"].wpProQuiz_questionInput{
+		margin: 0 10px 0 20px !important;
+	}
+}
+
+.wpProQuiz_question_text{
+	font-weight: bold;
+	margin-top: 30px;
+	margin-bottom: 20px !important;
+	display: block;
+}
+
+
+.wpProQuiz_question_text p{
+	display: inline; /* Align question with number */
+}
+
+.wpProQuiz_points{
+	text-align: left !important;
+}
+
+.green{
+	background: @correct;
+	padding: 1px 5px;
+}
+
+.pink{
+	background: @false;
+	padding: 1px 5px;
+}
+
+.wpProQuiz_answerCorrect{
+	background: @correct !important;
+}
+
+.wpProQuiz_answerIncorrect{
+	background: @false !important;
+}
+
+.wpProQuiz_response{
+	background: #fff !important;
+	box-shadow: none !important;
+	padding: 15px 25px !important;
+}
+
+/* Profile */
+
+.ld_profile_status{
+	display: none;
+}
+
+.learndash_profile_details div{
+	font-size: 1.7rem !important;
+}
+
+#learndash_profile h4 a{
+	font-size: 1.5rem !important;
+	color: @primary !important;
+}
+
+.profile_info{
+	border-bottom: 10px solid @bgcolor;
+}
+
+
+
+/*------------------------------------*\
+    IMAGES
+\*------------------------------------*/
+
+
+
+/*------------------------------------*\
+	TYPOGRAPHY
+\*------------------------------------*/
+
+/* #Font-Face
+================================================== */
+@font-face {
+    font-family: 'CalibriRegular';
+    src: url('fonts/calibri-webfont.eot');
+    src: url('fonts/calibri-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/calibri-webfont.woff') format('woff'),
+         url('fonts/calibri-webfont.ttf') format('truetype'),
+         url('fonts/calibri-webfont.svg#CalibriRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'CalibriBold';
+    src: url('fonts/calibrib-webfont.eot');
+    src: url('fonts/calibrib-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/calibrib-webfont.woff') format('woff'),
+         url('fonts/calibrib-webfont.ttf') format('truetype'),
+         url('fonts/calibrib-webfont.svg#CalibriBold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+@font-face {
+    font-family: 'CalibriItalic';
+    src: url('fonts/calibrii-webfont.eot');
+    src: url('fonts/calibrii-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/calibrii-webfont.woff') format('woff'),
+         url('fonts/calibrii-webfont.ttf') format('truetype'),
+         url('fonts/calibrii-webfont.svg#CalibriItalic') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+/*------------------------------------*\
+    RESPONSIVE
+\*------------------------------------*/
+
+@media only screen and (min-width:320px) {
+
+}
+@media only screen and (min-width:480px) {
+
+}
+@media only screen and (min-width:768px) {
+
+}
+@media only screen and (min-width:1024px) {
+
+}
+@media only screen and (min-width:1140px) {
+
+}
+@media only screen and (min-width:1280px) {
+
+}
+@media only screen and (-webkit-min-device-pixel-ratio:1.5),
+	   only screen and (min-resolution:144dpi) {
+
+}
+
+/*------------------------------------*\
+    MISC
+\*------------------------------------*/
+
+::selection {
+	background:#04A4CC;
+	color:#FFF;
+	text-shadow:none;
+}
+::-webkit-selection {
+	background:#04A4CC;
+	color:#FFF;
+	text-shadow:none;
+}
+::-moz-selection {
+	background:#04A4CC;
+	color:#FFF;
+	text-shadow:none;
+}
+
+/*------------------------------------*\
+    WORDPRESS CORE
+\*------------------------------------*/
+
+.alignnone {
+	margin:5px 20px 20px 0;
+}
+.aligncenter,
+div.aligncenter {
+	display:block;
+	margin:5px auto 5px auto;
+}
+.alignright {
+	float:right;
+	margin:5px 0 20px 20px;
+}
+.alignleft {
+	float:left;
+	margin:5px 20px 20px 0;
+}
+a img.alignright {
+	float:right;
+	margin:5px 0 20px 20px;
+}
+a img.alignnone {
+	margin:5px 20px 20px 0;
+}
+a img.alignleft {
+	float:left;
+	margin:5px 20px 20px 0;
+}
+a img.aligncenter {
+	display:block;
+	margin-left:auto;
+	margin-right:auto;
+}
+.wp-caption {
+	background:#FFF;
+	border:1px solid #F0F0F0;
+	max-width:96%;
+	padding:5px 3px 10px;
+	text-align:center;
+}
+.wp-caption.alignnone {
+	margin:5px 20px 20px 0;
+}
+.wp-caption.alignleft {
+	margin:5px 20px 20px 0;
+}
+.wp-caption.alignright {
+	margin:5px 0 20px 20px;
+}
+.wp-caption img {
+	border:0 none;
+	height:auto;
+	margin:0;
+	max-width:98.5%;
+	padding:0;
+	width:auto;
+}
+.wp-caption .wp-caption-text,
+.gallery-caption {
+	font-size:11px;
+	line-height:17px;
+	margin:0;
+	padding:0 4px 5px;
+}
+.sticky {
+
+}
+.bypostauthor {
+
+}
+
+/*------------------------------------*\
+    PRINT
+\*------------------------------------*/
+
+@media print {
+	* {
+		background:transparent !important;
+		color:#000 !important;
+		box-shadow:none !important;
+		text-shadow:none !important;
+	}
+	a,
+	a:visited {
+		text-decoration:underline;
+	}
+	a[href]:after {
+		content:" (" attr(href) ")";
+	}
+	abbr[title]:after {
+		content:" (" attr(title) ")";
+	}
+	.ir a:after,
+	a[href^="javascript:"]:after,
+	a[href^="#"]:after {
+		content:"";
+	}
+	pre,blockquote {
+		border:1px solid #999;
+		page-break-inside:avoid;
+	}
+	thead {
+		display:table-header-group;
+	}
+	tr,img {
+		page-break-inside:avoid;
+	}
+	img {
+		max-width:100% !important;
+	}
+	@page {
+		margin:0.5cm;
+	}
+	p,
+	h2,
+	h3 {
+		orphans:3;
+		widows:3;
+	}
+	h2,
+	h3 {
+		page-break-after:avoid;
+	}
+}
