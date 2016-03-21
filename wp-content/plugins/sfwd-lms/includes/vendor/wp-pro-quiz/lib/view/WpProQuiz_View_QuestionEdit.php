@@ -48,7 +48,7 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 			<div class="postbox">
 				<h3 class="hndle"><?php _e('Points', 'wp-pro-quiz'); ?> <?php _e('(required)', 'wp-pro-quiz'); ?></h3>
 				<div class="inside">
-					<div>
+					<div id="wpProQuiz_questionPoints>
 						<p class="description">
 							<?php _e('Points for this question (Standard is 1 point)', 'wp-pro-quiz'); ?>
 						</p>
@@ -59,7 +59,7 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 							<?php _e('This points will be rewarded, only if the user closes the question correctly.', 'wp-pro-quiz'); ?>
 						</p>
 					</div>
-					<div style="margin-top: 10px;">
+					<div style="margin-top: 10px;" id="wpProQuiz_answerPointsActivated">
 						<label>
 							<input name="answerPointsActivated" type="checkbox" value="1" <?php echo $this->question->isAnswerPointsActivated() ? 'checked="checked"' : '' ?>>
 							<?php _e('Different points for each answer', 'wp-pro-quiz'); ?>
@@ -121,7 +121,7 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 				</div>
 			</div>
 			<div style="<?php echo $this->quiz->isHideAnswerMessageBox() ? 'display: none;' : ''; ?>">
-				<div class="postbox">
+				<div class="postbox" id="wpProQuiz_correctMessageBox">
 					<h3 class="hndle"><?php _e('Message with the correct answer', 'wp-pro-quiz'); ?> <?php _e('(optional)', 'wp-pro-quiz'); ?></h3>
 					<div class="inside">
 						<p class="description">
@@ -198,16 +198,20 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 					</label>
 					<label style="padding-right: 10px;">
 						<input type="radio" name="answerType" value="cloze_answer" <?php echo ($type === 'cloze_answer') ? 'checked="checked"' : ''; ?>>
-						<?php _e('Cloze', 'wp-pro-quiz'); ?>
+						<?php _e('Fill in the blank', 'wp-pro-quiz'); ?>
 					</label>
 					<label style="padding-right: 10px;">
 						<input type="radio" name="answerType" value="assessment_answer" <?php echo ($type === 'assessment_answer') ? 'checked="checked"' : ''; ?>>
 						<?php _e('Assessment', 'wp-pro-quiz'); ?>
 					</label>
+					<label style="padding-right: 10px;">
+						<input type="radio" name="answerType" value="essay" <?php echo ($type === 'essay') ? 'checked="checked"' : ''; ?>>
+						<?php _e('Essay / Open Answer', 'wp-pro-quiz'); ?>
+					</label>
 				</div>
 			</div>
 			<?php $this->singleChoiceOptions($this->data['classic_answer']); ?>
-			<div class="postbox">
+			<div class="postbox" id="wpProQuiz_answers">
 				<h3 class="hndle"><?php _e('Answers', 'wp-pro-quiz'); ?> <?php _e('(required)', 'wp-pro-quiz'); ?></h3>
 				<div class="inside answer_felder">
 					<div class="free_answer">
@@ -220,13 +224,13 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 						<ul class="answerList">
 							<?php $this->sortingChoice($this->data['sort_answer']); ?>
 						</ul>
-						<input type="button" class="button-primary addAnswer" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
+						<input type="button" class="button-primary addAnswer" data-default-value="<?php echo LEARNDASH_LMS_DEFAULT_ANSWER_POINTS ?>" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
 					</div>
 					<div class="classic_answer">
 						<ul class="answerList">
 							<?php $this->singleMultiCoice($this->data['classic_answer']); ?>	
 						</ul>
-						<input type="button" class="button-primary addAnswer" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
+						<input type="button" class="button-primary addAnswer" data-default-value="<?php echo LEARNDASH_LMS_DEFAULT_ANSWER_POINTS ?>" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
 					</div>
 					<div class="matrix_sort_answer">
 						<p class="description">
@@ -248,13 +252,16 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 						<ul class="answerList">
 							<?php $this->matrixSortingChoice($this->data['matrix_sort_answer']); ?>
 						</ul>
-						<input type="button" class="button-primary addAnswer" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
+						<input type="button" class="button-primary addAnswer" data-default-value="<?php echo LEARNDASH_LMS_DEFAULT_ANSWER_POINTS ?>" value="<?php _e('Add new answer', 'wp-pro-quiz'); ?>">
 					</div>
 					<div class="cloze_answer">
 						<?php $this->clozeChoice($this->data['cloze_answer']); ?>
 					</div>
 					<div class="assessment_answer">
 						<?php $this->assessmentChoice($this->data['assessment_answer']); ?>
+					</div>
+					<div class="essay">
+						<?php $this->essayChoice($this->data['essay']); ?>
 					</div>
 				</div>
 			</div>
@@ -313,7 +320,7 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 						</div>
 						<div style="padding-top: 5px;" class="wpProQuiz_answerPoints">
 							<label>
-								<input type="number" min="0" class="small-text wpProQuiz_points" name="answerData[][points]" value="<?php echo $d->getPoints(); ?>"> 
+								<input type="number" min="0" class="small-text wpProQuiz_points" name="answerData[][points]" value="<?php echo $d->getPoints(); ?>">
 								<?php _e('Points', 'wp-pro-quiz'); ?>
 							</label>
 						</div>
@@ -502,6 +509,34 @@ class WpProQuiz_View_QuestionEdit extends WpProQuiz_View_View {
 			wp_editor($single->getAnswer(), 'assessment', array('textarea_rows' => 10, 'textarea_name' => 'answerData[assessment][answer]'));
 		?>
 <?php 
+	}
+
+
+	private function essayChoice( $data ) {
+		$data = array_shift( $data );
+		if ( is_a( $data, 'WpProQuiz_Model_AnswerTypes' ) ) {
+			?>
+				<p class="description"><?php _e( 'How should the user submit their answer?', 'learndash' ); ?></p>
+				<select name="answerData[essay][type]" id="essay-type">
+					<option value="text" <?php selected( $data->getGradedType(), 'text' ); ?>>Text Box</option>
+					<option value="upload" <?php selected( $data->getGradedType(), 'upload' ); ?>>Upload</option>
+				</select>
+
+				<p class="description" style="margin-top: 10px">
+					<?php _e( 'This is a question that can be graded and potentially prevent a user from progressing to the next step of the course.', 'learndash' ) ?><br />
+					<?php _e( 'The user can only progress if the essay is marked as "Graded" and if the user has enough points to move on.', 'learndash' ) ?><br />
+					<?php _e( 'How should the answer to this question be marked and graded upon quiz submission?', 'learndash' ) ?><br />
+				</p>
+				<select name="answerData[essay][progression]" id="essay-progression">
+					<option value="">-- Select --</option>
+					<option value="not-graded-none" <?php selected( $data->getGradingProgression(), 'not-graded-none' ); ?>>Not Graded, No Points Awarded</option>
+					<option value="not-graded-full" <?php selected( $data->getGradingProgression(), 'not-graded-full' ); ?>>Not Graded, Full Points Awarded</option>
+					<option value="graded-full" <?php selected( $data->getGradingProgression(), 'graded-full' ); ?>>Graded, Full Points Awarded</option>
+				</select>
+				<input type="hidden"  id="essay" name="answerData[essay][answer]">
+			<?php
+		}
+
 	}
 	
 	private function singleChoiceOptions($data) {

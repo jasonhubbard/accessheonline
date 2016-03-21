@@ -8,6 +8,8 @@
  */
 
 
+// This filter will parse the text of the widget for shortcodes.
+add_filter( 'widget_text', 'do_shortcode' );
 
 class LearnDash_Course_Info_Widget extends WP_Widget {
 
@@ -17,10 +19,10 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 	function __construct() {
 		$widget_ops = array( 
 			'classname' => 'widget_ldcourseinfo', 
-			'description' => __( 'LearnDash - Course attempt and score information of users. Visible only to users logged in.', 'learndash' )
+			'description' => sprintf( __( 'LearnDash - %s attempt and score information of users. Visible only to users logged in.', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) )
 		);
 		$control_ops = array(); //'width' => 400, 'height' => 350);
-		parent::__construct( 'ldcourseinfo', __( 'Course Information', 'learndash' ), $widget_ops, $control_ops );
+		parent::__construct( 'ldcourseinfo', sprintf( _x( '%s Information', 'Course Information', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ), $widget_ops, $control_ops );
 	}
 
 
@@ -35,6 +37,7 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
 		
 		extract( $args );
 
@@ -70,6 +73,8 @@ class LearnDash_Course_Info_Widget extends WP_Widget {
 		
 		echo $courseinfo;
 		echo $after_widget;
+		
+		$learndash_shortcode_used = true;
 	}
 
 
@@ -122,10 +127,10 @@ class LearnDash_Course_Navigation_Widget extends WP_Widget {
 	function __construct() {
 		$widget_ops = array(
 			'classname' => 'widget_ldcoursenavigation', 
-			'description' => __( 'LearnDash - Course Navigation. Shows lessons and topics on the current course.', 'learndash' )
+			'description' => sprintf( _x( 'LearnDash - %s Navigation. Shows lessons and topics on the current course.', 'LearnDash - Course Navigation. Shows lessons and topics on the current course.', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) )
 		);
 		$control_ops = array(); //'width' => 400, 'height' => 350);
-		parent::__construct( 'widget_ldcoursenavigation', __( 'Course Navigation', 'learndash' ), $widget_ops, $control_ops );
+		parent::__construct( 'widget_ldcoursenavigation', sprintf( _x( '%s Navigation', 'Course Navigation Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ), $widget_ops, $control_ops );
 	}
 
 
@@ -139,6 +144,8 @@ class LearnDash_Course_Navigation_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
+		
 		global $post;
 		
 		if ( empty( $post->ID ) || ! is_single() ) {
@@ -170,6 +177,8 @@ class LearnDash_Course_Navigation_Widget extends WP_Widget {
 		
 		learndash_course_navigation( $course_id );
 		echo $after_widget;
+		
+		$learndash_shortcode_used = true;
 	}
 
 
@@ -347,6 +356,8 @@ function learndash_course_info( $user_id ) {
  */
 function learndash_course_info_shortcode( $atts ) {
 	
+	global $learndash_shortcode_used;
+	
 	if ( isset( $atts['user_id'] ) ) {
 		$user_id = $atts['user_id'];
 	} else {
@@ -359,6 +370,8 @@ function learndash_course_info_shortcode( $atts ) {
 		$user_id = $current_user->ID;
 	}
 
+	$learndash_shortcode_used = true;
+	
 	return SFWD_LMS::get_course_info( $user_id );
 }
 
@@ -376,6 +389,8 @@ add_shortcode( 'ld_course_info', 'learndash_course_info_shortcode' );
  */
 function learndash_profile( $atts ) {
 	
+	global $learndash_shortcode_used;
+
 	if ( isset( $atts['user_id'] ) ) {
 		$user_id = $atts['user_id'];
 	} else {
@@ -411,8 +426,9 @@ function learndash_profile( $atts ) {
 
 			$quiz_attempts[learndash_get_course_id( $quiz_attempt['quiz'] )][] = $quiz_attempt;
 		}
-
 	}
+	
+	$learndash_shortcode_used = true;
 
 	return SFWD_LMS::get_template( 'profile', array(
 		'user_id' => $user_id, 

@@ -102,7 +102,6 @@ if ( ! function_exists( 'post2pdf_conv_post_to_pdf' ) ) {
 		}
 
 		$post_data = get_post( $post_id );
-
 		if ( ! $post_data ) {
 			wp_die( __( 'Post does not exist.', 'learndash' ) );
 		}
@@ -367,8 +366,19 @@ if ( ! function_exists( 'post2pdf_conv_post_to_pdf' ) ) {
 		require_once dirname( __FILE__ ) . '/vendor/tcpdf/config/lang/' . $config_lang . '.php';
 		require_once dirname( __FILE__ ) . '/vendor/tcpdf/tcpdf.php';
 		
+		$learndash_certificate_options = get_post_meta( $post_data->ID, 'learndash_certificate_options', true);
+		if (!is_array($learndash_certificate_options))
+			$learndash_certificate_options = array($learndash_certificate_options);
+	
+		if ( !isset( $learndash_certificate_options['pdf_page_format'] ) )
+			$learndash_certificate_options['pdf_page_format'] = PDF_PAGE_FORMAT;
+
+		if ( !isset( $learndash_certificate_options['pdf_page_orientation'] ) )
+			$learndash_certificate_options['pdf_page_orientation'] = PDF_PAGE_ORIENTATION;
+		
 		// Create a new object
-		$pdf = new TCPDF( PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, false );
+		//$pdf = new TCPDF( PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false, false );
+		$pdf = new TCPDF( $learndash_certificate_options['pdf_page_orientation'], PDF_UNIT, $learndash_certificate_options['pdf_page_format'], true, 'UTF-8', false, false );
 		
 		// Set document information
 		$pdf->SetCreator( PDF_CREATOR );

@@ -35,7 +35,7 @@
 	<?php /* Course progress */ ?>
 	<?php if ( $course_progress ) : ?>
 		<div id='course_progress_details'>
-			<h4><?php _e( 'Course progress details:', 'learndash' ); ?></h4>
+			<h4><?php printf( _x( '%s progress details:', 'Course progress details Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h4>
 			<?php foreach ( $course_progress as $course_id => $coursep ) : ?>
 				<?php $course = get_post( $course_id ); ?>
 				<?php if ( empty( $course->post_title ) ) : continue; endif; ?>
@@ -51,21 +51,76 @@
 
 		<?php foreach ( $quizzes as $k => $v ) : ?>
 			<?php $quiz = get_post( $v['quiz'] ); ?>
-			<?php $passstatus = isset( $v['pass'] ) ? ( ( $v['pass'] == 1 ) ? 'green' : 'red' ) : ''; ?>
-			<?php $c = learndash_certificate_details( $v['quiz'], $user_id ); ?>
-			<?php $certificateLink = $c['certificateLink']; ?>
-			<?php $certificate_threshold = $c['certificate_threshold']; ?>
+			<?php
+			
+			$certificateLink = null;
+
+			if ( true === $v['has_graded'] && true === LD_QuizPro::quiz_attempt_has_ungraded_question( $v ) ) {
+				$certificateLink = '';
+				$certificate_threshold = 0;
+				$passstatus = 'red';
+			} else {
+				$c = learndash_certificate_details( $v['quiz'], $user_id );
+				$certificateLink = $c['certificateLink']; 
+				$certificate_threshold = $c['certificate_threshold'];
+				$passstatus = isset( $v['pass'] ) ? ( ( $v['pass'] == 1 ) ? 'green' : 'red' ) : '';
+			}
+			?>
+			
+			<?php //$passstatus = isset( $v['pass'] ) ? ( ( $v['pass'] == 1 ) ? 'green' : 'red' ) : ''; ?>
+			<?php //$c = learndash_certificate_details( $v['quiz'], $user_id ); ?>
+			<?php //$certificateLink = $c['certificateLink']; ?>
+			<?php // $certificate_threshold = $c['certificate_threshold']; ?>
 			<?php $quiz_title = ! empty( $quiz->post_title ) ? $quiz->post_title : @$v['quiz_title']; ?>
 
 			<?php if ( ! empty( $quiz_title ) ) : ?>
 				<p>
-					<span style='color:<?php echo $passstatus ?>'><strong><?php echo __( 'Quiz', 'learndash' ); ?></strong>: <?php echo $quiz_title ?></span> 
+					<span style='color:<?php echo $passstatus ?>'><strong><?php echo LearnDash_Custom_Label::get_label( 'quiz' ); ?></strong>: <?php echo $quiz_title ?></span> 
 					<?php echo isset( $v['percentage'] ) ? " - {$v['percentage']}%" : '' ?>
 
-					<?php if ( $user_id == get_current_user_id() && ! empty( $certificateLink ) && ( ( isset( $v['percentage'] ) && $v['percentage'] >= $certificate_threshold * 100) || ( isset( $v['count'] ) && $v['score']/$v['count'] >= $certificate_threshold ) ) ) : ?>
+					<?php if ( $user_id == get_current_user_id() 
+						&& ! empty( $certificateLink ) 
+						&& ( ( isset( $v['percentage'] ) 
+						&& $v['percentage'] >= $certificate_threshold * 100) 
+						|| ( isset( $v['count'] ) && ( intval( $v['count'] ) ) && $v['score']/$v['count'] >= $certificate_threshold ) ) ) : ?>
 						- <a href='<?php echo $certificateLink ?>&time=<?php echo $v['time']; ?>' target='_blank'><?php echo __( 'Print Certificate', 'learndash' ); ?></a>
 					<?php endif; ?>
 					<br/>
+
+					<?php
+						if ( ( true === $v['has_graded'] ) && ( isset( $v['graded'] ) ) && (is_array( $v['graded'] ) ) && (!empty( $v['graded'] ) ) ) {
+							foreach($v['graded'] as $quiz_question_id => $graded ) {
+								
+								if ( isset( $graded['post_id'] ) ) {
+
+									$graded_post = get_post( $graded['post_id'] );
+									if ($graded_post instanceof WP_Post) {
+									
+										if ($graded['status'] == 'graded') {
+											$graded_color = ' color: green;';
+										} else {
+											$graded_color = ' color: red;';
+										}
+									
+										$post_status_object_label = get_post_status_object( $graded['status'] )->label;
+
+										//$post_type_object_label_name = get_post_type_object( $graded_post->post_type )->labels->name;
+										
+										echo /* $post_type_object_label_name .': '. */ get_the_title( $graded['post_id'] ) . ', '. __('Status', 'learndash') . ': <span style="'. $graded_color .'">' . $post_status_object_label .'</span>, '. __('Points', 'learndash') .': ' .  $graded['points_awarded'];
+									
+										if (is_admin()) {
+											echo ' <a target="_blank" href="'. get_edit_post_link( $graded['post_id'] ) .'">'. __( 'edit', 'learndash' ) .'</a>';
+										}
+										echo ' <a target="_blank" href="'. get_permalink( $graded['post_id'] ) .'">'. __( 'view', 'learndash' ) .'</a>';
+									
+										echo ' <a target="_blank" href="'. get_permalink( $graded['post_id'] ) .'#comments">'. __( 'comments', 'learndash' ) .' '. get_comments_number( $graded['post_id'] ) .'</a>';
+										echo '<br />';
+									}
+								}
+							}
+						}
+					?>
+
 					
 					<?php if ( isset( $v['rank'] ) && is_numeric( $v['rank'] ) ) : ?>
 						<?php echo __( 'Rank: ', 'learndash' ); ?> <?php echo $v['rank']; ?>, 

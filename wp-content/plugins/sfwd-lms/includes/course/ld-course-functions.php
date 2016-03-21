@@ -265,6 +265,7 @@ function sfwd_lms_access_redirect( $post_id ) {
 	}
 
 	$link = get_permalink( learndash_get_course_id( $post_id ) );
+	$link = apply_filters( 'learndash_access_redirect' , $link, $post_id );
 	wp_redirect( $link );
 	exit();
 }
@@ -485,20 +486,22 @@ function ld_lesson_access_from( $lesson_id, $user_id ) {
 		$lesson_access_from = $couses_access_from + $visible_after * 24 * 60 * 60;
 
 		if ( time() >= $lesson_access_from ) {
-			return null;
+			$return = null;
 		} else {
-			return $lesson_access_from;
+			$return = $lesson_access_from;
 		}		
 	} else {
 		$visible_after_specific_date = learndash_get_setting( $lesson_id, 'visible_after_specific_date' );
 		$specific_date = strtotime( $visible_after_specific_date );
 
 		if ( time() > $specific_date ) {
-			return null;
+			$return = null;
 		} else {
-			return $specific_date;
+			$return = $specific_date;
 		}
 	}
+
+	return apply_filters( 'ld_lesson_access_from', $return, $lesson_id, $user_id );
 }
 
 
@@ -535,10 +538,10 @@ function lesson_visible_after( $content, $post ) {
 	if ( empty( $lesson_access_from) ) {
 		return $content; 
 	} else {
-		$content = sprintf( __( ' Available on: %s ', 'learndash' ), date_i18n( 'd-M-Y', $lesson_access_from ) ).'<br><br>';
+		$content = sprintf( __( ' Available on: %s ', 'learndash' ), learndash_adjust_date_time_display( $lesson_access_from ) ).'<br><br>';
 		$course_id = learndash_get_course_id( $lesson_id );
 		$course_link = get_permalink( $course_id );
-		$content .= "<a href='".$course_link."'>". __( 'Return to Course Overview', 'learndash' ) . '</a>';
+		$content .= "<a href='".$course_link."'>". sprintf( _x( 'Return to %s Overview', 'Return to Course Overview Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ) . '</a>';
 
 		 /**
 		 * Filter content of lesson available text
@@ -653,6 +656,9 @@ add_action( 'wp', 'learndash_process_course_join' );
  * @return string       	output of shortcode
  */
 function learndash_course_content_shortcode( $atts ) {
+	
+	global $learndash_shortcode_used;
+	
 	if ( empty( $atts['course_id'] ) ) {
 		return '';
 	}
@@ -701,6 +707,8 @@ function learndash_course_content_shortcode( $atts ) {
 	$content = str_replace( array("\n", "\r"), ' ', $content );
 	$user_has_access = $has_access? 'user_has_access':'user_has_no_access';
 
+	$learndash_shortcode_used = true;
+	
 	/**
 	 * Filter course content shortcode
 	 * 

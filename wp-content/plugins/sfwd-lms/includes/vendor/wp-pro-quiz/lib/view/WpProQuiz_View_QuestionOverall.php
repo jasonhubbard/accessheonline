@@ -2,6 +2,7 @@
 class WpProQuiz_View_QuestionOverall extends WpProQuiz_View_View {
 	
 	public function show() {
+		global $WpProQuiz_Answer_types_labels;
 ?>
 <style>
 .wpProQuiz_questionCopy {
@@ -13,7 +14,7 @@ class WpProQuiz_View_QuestionOverall extends WpProQuiz_View_View {
 }
 </style>
 <div class="wrap wpProQuiz_questionOverall">
-	<h2>Quiz: <?php echo $this->quiz->getName(); ?></h2>
+	<h1>Quiz: <?php echo $this->quiz->getName(); ?></h1>
 	<div id="sortMsg" class="updated" style="display: none;"><p><strong><?php _e('Questions sorted', 'wp-pro-quiz'); ?></strong></p></div>
 	<br>
 	<p>
@@ -26,6 +27,7 @@ class WpProQuiz_View_QuestionOverall extends WpProQuiz_View_View {
 			<tr>
 				<th scope="col" style="width: 50px;"></th>
 				<th scope="col"><?php _e('Name', 'wp-pro-quiz'); ?></th>
+				<th scope="col"><?php _e('Type', 'wp-pro-quiz'); ?></th>
 				<th scope="col"><?php _e('Category', 'wp-pro-quiz'); ?></th>
 				<th scope="col"><?php _e('Points', 'wp-pro-quiz'); ?></th>
 			</tr>
@@ -37,45 +39,70 @@ class WpProQuiz_View_QuestionOverall extends WpProQuiz_View_View {
 
 			if(count($this->question)) {
 
-			foreach ($this->question as $question) {
-				$points += $question->getPoints();
+				foreach ($this->question as $question) {				
+					$points += $question->getPoints();
 				
-			?>
-			<tr id="wpProQuiz_questionId_<?php echo $question->getId(); ?>">
-				<th><?php echo $index++; ?></th>
-				<td>
-					<strong><?php echo $question->getTitle(); ?></strong>
-					<div class="row-actions">
-						<?php if(current_user_can('wpProQuiz_edit_quiz')) { ?>
-						<span>
-							<a href="admin.php?page=ldAdvQuiz&module=question&action=addEdit&quiz_id=<?php echo $this->quiz->getId(); ?>&questionId=<?php echo $question->getId(); ?>&post_id=<?php echo @$_GET['post_id']; ?>"><?php _e('Edit', 'wp-pro-quiz'); ?></a> | 
-						</span>
-						<?php } if(current_user_can('wpProQuiz_delete_quiz')) { ?>
-						<span>
-							<a style="color: red;" class="wpProQuiz_delete" href="admin.php?page=ldAdvQuiz&module=question&action=delete&quiz_id=<?php echo $this->quiz->getId(); ?>&id=<?php echo $question->getId(); ?>&post_id=<?php echo @$_GET['post_id']; ?>"><?php _e('Delete', 'wp-pro-quiz'); ?></a> | 
-						</span>
-						<?php } if(current_user_can('wpProQuiz_edit_quiz')) { ?>
-						<span>
-							<a class="wpProQuiz_move" href="#" style="cursor:move;"><?php _e('Move', 'wp-pro-quiz'); ?></a>
-						</span>
-						<?php } ?>
-					</div>
-				</td>
-				<td>
-					<?php echo $question->getCategoryName(); ?>
-				</td>
-				<td><?php echo $question->getPoints(); ?></td>
-			</tr>
-			<?php } } else { ?>
-				<tr>
-					<td colspan="4" style="text-align: center; font-weight: bold; padding: 10px;"><?php _e('No data available', 'wp-pro-quiz'); ?></td>
+				?>
+				<tr id="wpProQuiz_questionId_<?php echo $question->getId(); ?>">
+					<th><?php echo $index++; ?></th>
+					<td>
+						<strong><?php if ( current_user_can( 'wpProQuiz_edit_quiz' ) ) { 
+							$edit_link = add_query_arg(
+								array(
+									'page'			=>	'ldAdvQuiz',
+									'module'		=>	'question',
+									'action'		=>	'addEdit',
+									'quiz_id'		=> 	$this->quiz->getId(),
+									'questionId'	=>	$question->getId(),
+									'post_id'		=>	@$_GET['post_id']
+								),
+								admin_url('admin.php')
+							);
+							?><a href="<?php echo $edit_link ?>"><?php } ?><?php echo $question->getTitle(); ?><?php if ( current_user_can( 'wpProQuiz_edit_quiz' ) ) { ?></a><?php } ?></strong>
+							<div class="row-actions">
+							<?php if ( current_user_can( 'wpProQuiz_edit_quiz' ) ) { ?>
+								<span><a href="admin.php?page=ldAdvQuiz&module=question&action=addEdit&quiz_id=<?php echo $this->quiz->getId(); ?>&questionId=<?php echo $question->getId(); ?>&post_id=<?php echo @$_GET['post_id']; ?>"><?php _e('Edit', 'wp-pro-quiz'); ?></a> | 
+							</span>
+							<?php } if(current_user_can('wpProQuiz_delete_quiz')) { ?>
+							<span>
+								<a style="color: red;" class="wpProQuiz_delete" href="admin.php?page=ldAdvQuiz&module=question&action=delete&quiz_id=<?php echo $this->quiz->getId(); ?>&id=<?php echo $question->getId(); ?>&post_id=<?php echo @$_GET['post_id']; ?>"><?php _e('Delete', 'wp-pro-quiz'); ?></a> | 
+							</span>
+							<?php } if(current_user_can('wpProQuiz_edit_quiz')) { ?>
+							<span>
+								<a class="wpProQuiz_move" href="#" style="cursor:move;"><?php _e('Move', 'wp-pro-quiz'); ?></a>
+							</span>
+							<?php } ?>
+						</div>
+					</td>
+					<td>
+						<?php 
+							$question_type = $question->getAnswerType(); 
+							if (isset($WpProQuiz_Answer_types_labels[$question_type])) {
+								echo $WpProQuiz_Answer_types_labels[$question_type];
+							}
+						?>
+					</td>
+					<td>
+						<?php echo $question->getCategoryName(); ?>
+					</td>
+					<td><?php echo $question->getPoints(); ?></td>
 				</tr>
-			<?php } ?>
+				<?php 
+				} 
+			} else { 
+				?>
+				<tr>
+					<td colspan="5" style="text-align: center; font-weight: bold; padding: 10px;"><?php _e('No data available', 'wp-pro-quiz'); ?></td>
+				</tr>
+				<?php 
+			} 
+			?>
 		</tbody>
 		<tfoot>
 			<tr>
 				<th></th>
 				<th style="font-weight: bold;"><?php _e('Total', 'wp-pro-quiz'); ?></th>
+				<th></th>
 				<th></th>
 				<th style="font-weight: bold;"><?php echo $points; ?></th>
 			</tr>
@@ -90,7 +117,7 @@ class WpProQuiz_View_QuestionOverall extends WpProQuiz_View_View {
 	</p>
 	<div class="wpProQuiz_questionCopy">
 		<form action="admin.php?page=ldAdvQuiz&module=question&quiz_id=<?php echo $this->quiz->getId(); ?>&action=copy_question" method="POST">
-			<h3 style="margin-top: 0;"><?php _e('Copy questions from another Quiz', 'wp-pro-quiz'); ?></h3>
+			<h2 style="margin-top: 0;"><?php _e('Copy questions from another Quiz', 'wp-pro-quiz'); ?></h2>
 			<p><?php echo __('Here you can copy questions from another quiz into this quiz. (Multiple selection enabled)', 'wp-pro-quiz'); ?></p>
 			
 			<div style="padding: 20px; display: none;" id="loadDataImg">

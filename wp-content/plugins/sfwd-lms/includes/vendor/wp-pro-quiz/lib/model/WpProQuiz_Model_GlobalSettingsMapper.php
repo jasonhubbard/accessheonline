@@ -4,10 +4,30 @@ class WpProQuiz_Model_GlobalSettingsMapper extends WpProQuiz_Model_Mapper {
 	public function fetchAll() {
 		$s = new WpProQuiz_Model_GlobalSettings();
 		
-		$s->setAddRawShortcode(get_option('wpProQuiz_addRawShortcode'))
-			->setJsLoadInHead(get_option('wpProQuiz_jsLoadInHead'))
-			->setTouchLibraryDeactivate(get_option('wpProQuiz_touchLibraryDeactivate'))
-			->setCorsActivated(get_option('wpProQuiz_corsActivated'));
+		// Why are we doing this? When the option does not exists it causes WP to execute the SQL to the wp_options table for 
+		// each access attempt. By settings a default value the option will be auto loaded when WP initialized. Then when
+		// we call get_option we are just accessing the WP global settings array instead of causing a SQL each time. 
+		// Saves a few time slices. 
+		$wpProQuiz_addRawShortcode = get_option('wpProQuiz_addRawShortcode');
+		if ($wpProQuiz_addRawShortcode === false) 
+			update_option('wpProQuiz_addRawShortcode', '');
+
+		$wpProQuiz_jsLoadInHead = get_option('wpProQuiz_jsLoadInHead');
+		if ($wpProQuiz_jsLoadInHead === false) 
+			update_option('wpProQuiz_jsLoadInHead', '');
+
+		$wpProQuiz_touchLibraryDeactivate = get_option('wpProQuiz_touchLibraryDeactivate');
+		if ($wpProQuiz_touchLibraryDeactivate === false) 
+			update_option('wpProQuiz_touchLibraryDeactivate', '');
+
+		$wpProQuiz_corsActivated = get_option('wpProQuiz_corsActivated');
+		if ($wpProQuiz_corsActivated === false) 
+			update_option('wpProQuiz_corsActivated', '');
+		
+		$s->setAddRawShortcode( $wpProQuiz_addRawShortcode )
+			->setJsLoadInHead( $wpProQuiz_jsLoadInHead )
+			->setTouchLibraryDeactivate( $wpProQuiz_touchLibraryDeactivate )
+			->setCorsActivated( $wpProQuiz_corsActivated );
 		
 		return $s;
 	}

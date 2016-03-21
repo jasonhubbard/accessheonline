@@ -38,7 +38,7 @@
 ?>
 <?php if ( $logged_in ) : ?>
 	<span id="learndash_course_status">
-		<b><?php _e( 'Course Status:', 'learndash' ); ?></b> <?php echo $course_status; ?>
+		<b><?php printf( _x( '%s Status:', 'Course Status Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></b> <?php echo $course_status; ?>
 		<br />
 	</span>
 	<br />
@@ -60,14 +60,24 @@
 
 <?php if ( isset( $materials ) ) : ?>
 	<div id="learndash_course_materials">
-		<h4><?php _e( 'Course Materials', 'learndash' ); ?></h4>
+		<h4><?php printf( _x( '%s Materials', 'Course Materials Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h4>
 		<p><?php echo $materials; ?></p>
 	</div>
 <?php endif; ?>
 
 <?php if ( $has_course_content ) : ?>
+	<?php 
+		$show_course_content = true;
+		if ( !$has_access ) :
+			if ( $course_meta['sfwd-courses_course_disable_content_table'] == 'on' ) :
+				$show_course_content = false;
+			endif;	
+		endif;
+		
+		if ( $show_course_content ) :
+			?>
 	<div id="learndash_course_content">
-		<h4 id="learndash_course_content_title"><?php _e( 'Course Content', 'learndash' ); ?></h4>
+			<h4 id="learndash_course_content_title"><?php printf( _x( '%s Content', 'Course Content Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h4>
 
 		<?php
         /**
@@ -85,7 +95,7 @@
 			<div id="learndash_lessons">
 
 				<div id="lesson_heading">
-					<span><?php _e( 'Lessons', 'learndash' ); ?></span>
+						<span><?php echo LearnDash_Custom_Label::get_label( 'lessons' ) ?></span>
 					<span class="right"><?php _e( 'Status', 'learndash' ); ?></span>
 				</div>
 
@@ -109,7 +119,8 @@
                                 ?>
 								<?php if ( ! empty( $lesson['lesson_access_from'] ) ) : ?>
 									<small class="notavailable_message">
-										<?php echo sprintf( __( 'Available on: %s ', 'learndash' ), date_i18n( 'd-M-Y', $lesson['lesson_access_from'] ) ); ?>
+										<?php echo sprintf( __( 'Available on: %s ', 'learndash' ), learndash_adjust_date_time_display( $lesson['lesson_access_from'] ) ); ?>
+										
 									</small>
 								<?php endif; ?>
 
@@ -157,7 +168,7 @@
 		<?php if ( ! empty( $quizzes ) ) : ?>
 			<div id="learndash_quizzes">
 				<div id="quiz_heading">
-					<span><?php _e( 'Quizzes', 'learndash' ); ?></span><span class="right"><?php _e( 'Status', 'learndash' ); ?></span>
+						<span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ) ?></span><span class="right"><?php _e( 'Status', 'learndash' ); ?></span>
 				</div>
 				<div id="quiz_list">
 
@@ -175,4 +186,5 @@
 		<?php endif; ?>
 
 	</div>
+		<?php endif; ?>
 <?php endif; ?>

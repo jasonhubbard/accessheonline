@@ -264,7 +264,7 @@ function learndash_upload_assignment_init( $post_id, $fname ) {
 		return;
 	}
 	
-	update_post_meta ($post_id, 'sfwd_lessons-assignment', $new_assignmnt_meta );
+	update_post_meta( $post_id, 'sfwd_lessons-assignment', $new_assignmnt_meta );
 	$post = get_post( $post_id );
 	$course_id = learndash_get_course_id( $post->ID );
 
@@ -280,6 +280,12 @@ function learndash_upload_assignment_init( $post_id, $fname ) {
 		'lesson_title' => $post->post_title, 
 		'lesson_type' => $post->post_type,
 	);
+
+	$points_enabled = learndash_get_setting( $post, 'lesson_assignment_points_enabled' );
+
+	if ( $points_enabled == 'on' ) {
+		$assignment_meta['points'] = 'Pending';
+	}
 
 	$assignment = array(
 		'post_title' => $fname, 
@@ -299,8 +305,15 @@ function learndash_upload_assignment_init( $post_id, $fname ) {
 	
 	$auto_approve = learndash_get_setting( $post, 'auto_approve_assignment' );
 
-	if ( $auto_approve ) {
+	if ( ! empty( $auto_approve ) ) {
 		learndash_approve_assignment( $current_user->ID, $post_id );
+
+		// assign full points if auto approve & points are enabled
+		if ( $points_enabled == 'on' ) {
+			$points = learndash_get_setting( $post, 'lesson_assignment_points_amount' );
+			update_post_meta( $assignment_post_id, 'points', intval( $points ) );
+		}
+
 		learndash_get_next_lesson_redirect( $post );
 	}
 }
@@ -383,6 +396,8 @@ function learndash_clean_filename( $string ) {
  * @return array    file description
  */
 function learndash_fileupload_process( $uploadfiles, $post_id ) {
+
+
 	if ( is_array( $uploadfiles ) ) {
 		
 		foreach( $uploadfiles['name'] as $key => $value ) {
@@ -520,24 +535,45 @@ add_action( 'admin_footer', 'learndash_assignment_bulk_actions' );
  */
 function learndash_assignment_bulk_actions_approve() {
 	
-	if ( ( ! empty( $_REQUEST['post'] ) && $_REQUEST['post_type'] == 'sfwd-assignment' && $_REQUEST['action2'] == '-1' && $_REQUEST['action'] == 'approve' ) || ( ! empty( $_REQUEST['post'] ) && $_REQUEST['ld_action'] == 'approve_assignment' ) ) {
+	if ( ( ( isset( $_REQUEST['post'] ) ) && ( ! empty( $_REQUEST['post'] ) ) && (is_array( $_REQUEST['post'] ) ) )
+	  && ( ( isset( $_REQUEST['post_type'] ) ) && ( $_REQUEST['post_type'] == 'sfwd-assignment' ) ) ) {
 
-		$assignments = $_REQUEST['post'];
-		$approval_ids = array();
+		$action = '';
+  		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] )
+  			$action = 'approve_assignment';
 
-		foreach( $assignments as $assignment ) {
-			$assignment_post = get_post( $assignment );
-			$user_id = $assignment_post->post_author;
-			$lesson_id = get_post_meta( $assignment_post->ID, 'lesson_id', true );
+  		else if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] )
+  			$action = 'approve_assignment';
+	
+		else if ( ( isset( $_REQUEST['ld_action'] ) ) && ( $_REQUEST['ld_action'] == 'approve_assignment') )  
+  			$action = 'approve_assignment';
+	
+		if ( $action == 'approve_assignment' ) {
+			$assignments = $_REQUEST['post'];
+			$approval_ids = array();
+
+			foreach( $assignments as $assignment ) {
+
+				// we don't want to approve assignments that have points as part of the bulk approve
+				$points_enabled = learndash_assignment_is_points_enabled( $assignment );
+
+				if ( $points_enabled === true ) {
+					continue;
+				}
+
+				$assignment_post = get_post( $assignment );
+				$user_id = $assignment_post->post_author;
+				$lesson_id = get_post_meta( $assignment_post->ID, 'lesson_id', true );
 			
-			if ( empty( $approval_ids[ $user_id ] ) || empty( $approval_ids[ $user_id ][ $lesson_id ] ) ) {
-				learndash_approve_assignment( $user_id, $lesson_id );
+				if ( empty( $approval_ids[ $user_id ] ) || empty( $approval_ids[ $user_id ][ $lesson_id ] ) ) {
+					learndash_approve_assignment( $user_id, $lesson_id );
+				}
 			}
-		}
 
-		if ( ! empty( $_REQUEST['ret_url'] ) ) {
-			header( 'Location: ' . rawurldecode( $_REQUEST['ret_url'] ) );
-			exit;
+			if ( ! empty( $_REQUEST['ret_url'] ) ) {
+				header( 'Location: ' . rawurldecode( $_REQUEST['ret_url'] ) );
+				exit;
+			}
 		}
 	}
 }
@@ -646,8 +682,10 @@ function learndash_assignment_inline_actions( $actions, $post ) {
 		$download_link = get_post_meta( $post->ID, 'file_link', true );
 		$actions['download_assignment'] = "<a href='" . $download_link . "' target='_blank'>" . __( 'Download', 'learndash' ) . '</a>';
 		$learndash_assignment_approval_link = learndash_assignment_approval_link( $post->ID );
+
+		$points_enabled = learndash_assignment_is_points_enabled( $post->ID );
 		
-		if ( $learndash_assignment_approval_link ) {
+		if ( $learndash_assignment_approval_link && ! $points_enabled ) {
 			$actions['approve_assignment'] = "<a href='" . $learndash_assignment_approval_link . "' >" . __( 'Approve', 'learndash' ) . '</a>';
 		}
 	}
@@ -770,19 +808,69 @@ add_action( 'add_meta_boxes', 'learndash_assignment_metabox' );
 /**
  * Add Approval Link to assignment metabox
  * 
- * 
  * @since 2.1.0
  */
 function learndash_assignment_metabox_content() {
 	global $post;
-	$file_link = get_post_meta( $post->ID, 'file_link', true );
-	echo "<a href='" . $file_link . "' target='_blank'>" . __( 'Download', 'learndash' ) . '</a><br>';
-	$learndash_assignment_approval_link = learndash_assignment_approval_link( $post->ID );
 
-	if ( $learndash_assignment_approval_link ) {
-		echo "<a href='" . $learndash_assignment_approval_link . "' >" . __( 'Approve', 'learndash' ) . '</a><br>';
+	// point handling
+	$assignment_settings_id = intval( get_post_meta( $post->ID, 'lesson_id', true ) );
+	$points_enabled = learndash_get_setting( $assignment_settings_id, 'lesson_assignment_points_enabled' );
+
+	if ( $points_enabled == 'on' && is_numeric( $assignment_settings_id ) ) {
+		$max_points = intval( learndash_get_setting( $assignment_settings_id, 'lesson_assignment_points_amount' ) );
+		$current_points = intval( get_post_meta( $post->ID, 'points', true ) );
+		$update_text = learndash_is_assignment_approved_by_meta( $post->ID ) ? __( 'Update', 'learndash' ) : __( 'Update & Approve', 'learndash' );
+
+		echo "<p>";
+		echo "<label for='assignment-points'>" . sprintf( __( 'Awarded Points (Out of %d):', 'learndash' ), $max_points ) . "</label><br />";
+		echo "<input name='assignment-points' type='number' min=0 max='{$max_points}' value='{$current_points}'>";
+		echo "<p><input name='save' type='submit' class='button button-primary button-large' id='publish' value='{$update_text}'></p>";
+		echo "</p>";
+	} else {
+
+		// this approval link is actually used for approving assignment in bulk. needs to be optimized to approve only
+		// one given assignment
+		$learndash_assignment_approval_link = learndash_assignment_approval_link( $post->ID );
+
+		if ( $learndash_assignment_approval_link ) {
+			echo "<a href='" . $learndash_assignment_approval_link . "' class='button button-primary'>" . __( 'Approve', 'learndash' ) . '</a>';
+		}
 	}
+
+	// link handling
+	$file_link = get_post_meta( $post->ID, 'file_link', true );
+
+	echo "<a href='" . $file_link . "' target='_blank' class='button'>" . __( 'Download', 'learndash' ) . '</a>';
+
+
 }
+
+
+
+/**
+ * Update assignment points and approval status
+ *
+ * @since 2.1.0
+ *
+ * @param $assignment_id
+ */
+function learndash_assignment_save_metabox_content( $assignment_id ) {
+	if ( ! isset( $_POST['assignment-points'] ) ) {
+		return;
+	}
+
+	// update points
+	$points = intval( $_POST['assignment-points'] );
+	update_post_meta( $assignment_id, 'points', $points );
+
+	// approve assignment
+	$assignment_post = get_post( $assignment_id );
+	$lesson_id = get_post_meta( $assignment_id, 'lesson_id', true );
+	learndash_approve_assignment( $assignment_post->post_author, $lesson_id );
+}
+
+add_action( 'save_post', 'learndash_assignment_save_metabox_content' );
 
 
 
@@ -929,3 +1017,62 @@ function learndash_before_delete_assignment( $post_id ) {
 }
 
 add_action( 'before_delete_post', 'learndash_before_delete_assignment' );
+
+
+
+/**
+ * Echo the number of points awarded on the front end
+ *
+ * Displayed on single lessons under the submitted assignment
+ *
+ * @param $assignment_id
+ *
+ * @return string
+ */
+function learndash_assignment_points_awarded( $assignment_id ) {
+	$points_enabled = learndash_assignment_is_points_enabled( $assignment_id );
+
+	if ( $points_enabled ) {
+		$current = get_post_meta( $assignment_id, 'points', true );
+
+		if ( is_numeric( $current ) ) {
+			$assignment_settings_id = intval( get_post_meta( $assignment_id, 'lesson_id', true ) );
+			$max_points = learndash_get_setting( $assignment_settings_id, 'lesson_assignment_points_amount' );
+			$percentage = ( intval( $current ) / intval( $max_points ) ) * 100;
+			$percentage = round( $percentage, 2 );
+			$current = apply_filters(
+				'learndash_points_awarded_output_format',
+				sprintf(
+					'(%d/%d) %d&#37; ',
+					$current,
+					$max_points,
+					$percentage
+				),
+				$current,
+				$max_points,
+				$percentage
+			);
+		}
+
+		return apply_filters( 'learndash_points_awarded_output', sprintf( 'Points Awarded: %s', $current ), $current );
+	}
+}
+
+
+function learndash_assignment_is_points_enabled( $assignment ) {
+	if ( is_a( $assignment, 'WP_Post' ) ) {
+		$assignment_id = $assignment->ID;
+	} else {
+		$assignment_id = intval( $assignment );
+	}
+
+	$assignment_settings_id = intval( get_post_meta( $assignment_id, 'lesson_id', true ) );
+	$points_enabled = learndash_get_setting( $assignment_settings_id, 'lesson_assignment_points_enabled' );
+
+	if ( $points_enabled == 'on' ) {
+		return true;
+	}
+
+	return false;
+}
+

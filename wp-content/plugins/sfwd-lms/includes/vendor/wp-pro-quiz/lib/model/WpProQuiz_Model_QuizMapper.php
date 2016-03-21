@@ -70,68 +70,106 @@ class WpProQuiz_Model_QuizMapper extends WpProQuiz_Model_Mapper
 			$text = "AAZZAAZZ";
 		
 		$set = array(
+			
 			'name' => $name,
 			'text' => $text,
 			'result_text' => $resultText,
 			'title_hidden' => (int)$data->isTitleHidden(),
 			'btn_restart_quiz_hidden' => (int)$data->isBtnRestartQuizHidden(),
+			
 			'btn_view_question_hidden' => (int)$data->isBtnViewQuestionHidden(),
 			'question_random' => (int)$data->isQuestionRandom(),
 			'answer_random' => (int)$data->isAnswerRandom(),
-			'time_limit' => (int)$data->getTimeLimit(),
+			'time_limit' => (int)$data->getTimeLimit(),			
 			'statistics_on' => (int)$data->isStatisticsOn(),
+
 			'statistics_ip_lock' => (int)$data->getStatisticsIpLock(),
 			'result_grade_enabled' => (int)$data->isResultGradeEnabled(),
 			'show_points' => (int)$data->isShowPoints(),
 			'quiz_run_once' => (int)$data->isQuizRunOnce(),
 			'quiz_run_once_type' => $data->getQuizRunOnceType(),
+
 			'quiz_run_once_cookie' => (int)$data->isQuizRunOnceCookie(),
 			'quiz_run_once_time' => (int)$data->getQuizRunOnceTime(),
 			'numbered_answer' => (int)$data->isNumberedAnswer(),
 			'hide_answer_message_box' => (int)$data->isHideAnswerMessageBox(),
 			'disabled_answer_mark' => (int)$data->isDisabledAnswerMark(),
+
 			'show_max_question' => (int)$data->isShowMaxQuestion(),
 			'show_max_question_value' => (int)$data->getShowMaxQuestionValue(),
 			'show_max_question_percent' => (int)$data->isShowMaxQuestionPercent(),
 			'toplist_activated' => (int)$data->isToplistActivated(),
 			'toplist_data' => $data->getToplistData(),
+
 			'show_average_result' => (int)$data->isShowAverageResult(),
 			'prerequisite' => (int)$data->isPrerequisite(),
 			'quiz_modus' => (int)$data->getQuizModus(),
 			'show_review_question' => (int)$data->isShowReviewQuestion(),
 			'quiz_summary_hide' => (int)$data->isQuizSummaryHide(),
+
 			'skip_question_disabled' => (int)$data->isSkipQuestionDisabled(),
 			'email_notification' => $data->getEmailNotification(),
 			'user_email_notification' => (int)$data->isUserEmailNotification(),
 			'show_category_score' => (int)$data->isShowCategoryScore(),
 			'hide_result_correct_question' => (int)$data->isHideResultCorrectQuestion(),
+
 			'hide_result_quiz_time' => (int)$data->isHideResultQuizTime(),
 			'hide_result_points' => (int)$data->isHideResultPoints(),
 			'autostart' => (int)$data->isAutostart(),
 			'forcing_question_solve' => (int)$data->isForcingQuestionSolve(),
 			'hide_question_position_overview' => (int)$data->isHideQuestionPositionOverview(),
+
 			'hide_question_numbering' => (int)$data->isHideQuestionNumbering(),
 			'form_activated' => (int)$data->isFormActivated(),
 			'form_show_position' => $data->getFormShowPosition(),
 			'start_only_registered_user' => (int)$data->isStartOnlyRegisteredUser(),
 			'questions_per_page' => $data->getQuestionsPerPage(),
+
 			'sort_categories' => (int)$data->isSortCategories(),
 			'show_category' => (int)$data->isShowCategory()
 		);
 		
 		if($data->getId() != 0) {
-			$result = $this->_wpdb->update($this->_table,
-					$set,
-					array(
-							'id' => $data->getId()
-					),
-					array('%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d'),
-					array('%d'));
+			$result = $this->_wpdb->update(
+				$this->_table,
+				$set,
+				array(
+						'id' => $data->getId()
+				),
+				array(
+					'%s', '%s', '%s', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%s', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d'
+				),
+				array(
+					'%d'
+				)
+			);
 		} else {
 			
-			$result = $this->_wpdb->insert($this->_table,
-						$set,
-						array('%s', '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d'));
+			$result = $this->_wpdb->insert(
+				$this->_table,
+				$set,
+				array(
+					'%s', '%s', '%s', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%s', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d', '%d', '%d', '%d', 
+					'%d', '%d'
+				)
+			);
 
 			$data->setId($this->_wpdb->insert_id);
 		}
@@ -139,6 +177,8 @@ class WpProQuiz_Model_QuizMapper extends WpProQuiz_Model_Mapper
 		if($result === false) {
 			return null;
 		}
+		
+		$data->saveTimeLimitCookie();
 		
 		return $data;
 	}

@@ -263,15 +263,51 @@ class WpProQuiz_Controller_Quiz extends WpProQuiz_Controller_Controller {
 		$statisticController = new WpProQuiz_Controller_Statistics();
 		
 		$quiz = $quizMapper->fetch($quizId);
+		//error_log('quiz<pre>'. print_r($quiz, true) .'</pre>');
+
 		$data = array();
 		
 		if($quiz === null || $quiz->getId() <= 0) {
 			return array();
 		}
-			
+		
 		$data['toplist'] = $toplistController->getAddToplist($quiz);
 		$data['averageResult'] = $statisticController->getAverageResult($quizId);
 		
+		/*
+		$data['quiz_repeats'] = (int)0;
+		$data['user_attempts_left'] = (int)0;
+		$data['user_attempts_taken'] = (int)0;
+		
+		// We need the user quiz stats when they click the start quiz button
+		$quiz_post_id = learndash_get_quiz_id_by_pro_quiz_id( $quizId );
+		
+		if (!empty($quiz_post_id)) {
+			$quiz_post_meta = get_post_meta( $quiz_post_id, '_sfwd-quiz', true);
+			
+			if ( isset( $quiz_post_meta['sfwd-quiz_repeats'] ) ) {
+				$data['quiz_repeats'] = intval( $quiz_post_meta['sfwd-quiz_repeats'] );
+			}
+		}
+		if ( !empty( $userId ) ) {
+			$usermeta = get_user_meta( $userId, '_sfwd-quizzes', true );
+			$usermeta = maybe_unserialize( $usermeta );
+			
+			if ( ! is_array( $usermeta ) ) { 
+				$usermeta = array();
+			}
+			
+			if ( ! empty( $usermeta ) )	{
+				foreach ( $usermeta as $k => $v ) {
+					if ( $v['quiz'] == $quiz_post_id ) { 
+						//error_log('match quiz<pre>'. print_r($v, true) .'</pre>');
+						$data['user_attempts_taken'] += 1;
+					}
+				}
+			}
+			$data['user_attempts_left'] = (int)( $data['quiz_repeats'] == '' || $data['quiz_repeats'] >= $data['user_attempts_taken'] );
+		}
+		*/
 		return $data;
 	}
 	
@@ -665,8 +701,7 @@ class WpProQuiz_Controller_Quiz extends WpProQuiz_Controller_Controller {
 		}
 	}
 	
-	public function completedQuiz() {
-		
+	public function completedQuiz() {		
 		$lockMapper = new WpProQuiz_Model_LockMapper();
 		$quizMapper = new WpProQuiz_Model_QuizMapper();
 		$categoryMapper = new WpProQuiz_Model_CategoryMapper();
@@ -689,9 +724,8 @@ class WpProQuiz_Controller_Quiz extends WpProQuiz_Controller_Controller {
 		
 		if(!$this->isPreLockQuiz($quiz)) {
 			$statistics = new WpProQuiz_Controller_Statistics();
-			$statistics->save($quiz);
-			
-			do_action('wp_pro_quiz_completed_quiz');
+			$statisticRefMapper_id = $statistics->save($quiz);
+			do_action('wp_pro_quiz_completed_quiz', $statisticRefMapper_id);
 			
 			if($is100P)
 				do_action('wp_pro_quiz_completed_quiz_100_percent');

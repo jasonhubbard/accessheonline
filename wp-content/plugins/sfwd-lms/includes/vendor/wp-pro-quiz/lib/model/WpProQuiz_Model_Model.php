@@ -29,8 +29,13 @@ class WpProQuiz_Model_Model {
 			
 			$a = array_combine($n, $array);
 			
-			foreach($a as $k => $v)
+			if (isset($a['Id'])) {
+				$this->setId($a['Id']);
+			}
+			
+			foreach($a as $k => $v) {
 				$this->{'set'.$k}($v);
+			}
 		}
 	}
 	

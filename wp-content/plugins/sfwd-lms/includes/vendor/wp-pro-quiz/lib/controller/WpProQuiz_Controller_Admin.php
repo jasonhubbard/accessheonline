@@ -87,6 +87,11 @@ class WpProQuiz_Controller_Admin {
 	}
 	
 	public function completedQuiz() {
+		// First we unpack the $_POST['results'] string
+		if ( ( isset( $_POST['results'] ) ) && ( !empty( $_POST['results'] ) ) && ( is_string( $_POST['results'] ) ) ) {
+			$_POST['results'] = json_decode(stripslashes($_POST['results']), true);
+		}
+		
 		$quiz = new WpProQuiz_Controller_Quiz();
 		$quiz->completedQuiz();
 	}
@@ -136,12 +141,15 @@ class WpProQuiz_Controller_Admin {
 	}
 	
 	public function enqueueScript() {
+		global $learndash_assets_loaded;
+		
 		wp_enqueue_script(
 			'wpProQuiz_admin_javascript', 
-			plugins_url('js/wpProQuiz_admin'.(WPPROQUIZ_DEV ? '' : '.min').'.js', WPPROQUIZ_FILE),
+			plugins_url('js/wpProQuiz_admin'. ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min') .'.js', WPPROQUIZ_FILE),
 			array('jquery', 'jquery-ui-sortable', 'jquery-ui-datepicker'),
 			WPPROQUIZ_VERSION
 		);
+		$learndash_assets_loaded['scripts']['wpProQuiz_admin_javascript'] = __FUNCTION__;
 		
 		$this->localizeScript();		
 	}

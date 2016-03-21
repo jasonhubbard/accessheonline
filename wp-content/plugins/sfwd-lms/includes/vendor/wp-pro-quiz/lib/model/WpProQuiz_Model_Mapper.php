@@ -25,6 +25,8 @@ class WpProQuiz_Model_Mapper {
 	protected $_tableForm;
 	protected $_tableTemplate;
 	
+	// Our reference between the ProQuiz and the Quiz (post_type)
+	protected $_quiz_post_id;
 	
 	function __construct() {
 		global $wpdb;

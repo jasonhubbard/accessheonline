@@ -86,13 +86,15 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	 */
 	define ('K_PATH_URL', $k_path_url);
 
+	$post2pdf_conv_setting_opt = get_option('post2pdf_conv_setting_opt');
+
 	/**
 	 * path for PDF fonts
 	 * use K_PATH_MAIN.'fonts/old/' for old non-UTF8 fonts
 	 */
 	// Modified by redcocker 2011/12/27
 	//define ('K_PATH_FONTS', K_PATH_MAIN.'fonts/');
-	if (!defined('K_PATH_FONTS') && $post2pdf_conv_setting_opt['font_path'] == 1) {
+	if (!defined('K_PATH_FONTS') && (isset($post2pdf_conv_setting_opt['font_path'])) && ($post2pdf_conv_setting_opt['font_path'] == 1)) {
 		define('K_PATH_FONTS', WP_CONTENT_DIR.'/tcpdf-fonts/');
 	} else {
 		define ('K_PATH_FONTS', K_PATH_MAIN.'fonts/');
@@ -113,7 +115,7 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	 */
 	// Modified by redcocker 2011/2/1
 	//define ('K_PATH_IMAGES', K_PATH_MAIN.'images/');
-	$post2pdf_conv_setting_opt = get_option('post2pdf_conv_setting_opt');
+	//$post2pdf_conv_setting_opt = get_option('post2pdf_conv_setting_opt'); // Move this line higher up
 	if ($post2pdf_conv_setting_opt['logo_file'] != "" && file_exists(WP_CONTENT_DIR.'/tcpdf-images/'.$post2pdf_conv_setting_opt['logo_file'])) {
 		define ('K_PATH_IMAGES', WP_CONTENT_DIR.'/tcpdf-images/');
 	} else {
@@ -128,7 +130,8 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	/**
 	 * page format
 	 */
-	define ('PDF_PAGE_FORMAT', 'A4');
+	//define ('PDF_PAGE_FORMAT', 'A4');
+	define ('PDF_PAGE_FORMAT', 'LETTER');
 
 	/**
 	 * page orientation (P=portrait, L=landscape)

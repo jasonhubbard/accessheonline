@@ -1,4 +1,4 @@
-if ( typeof sfwd_data != 'undefined' ) {
+if ( typeof sfwd_data.json != 'undefined' ) {
 	sfwd_data = sfwd_data.json.replace(/&quot;/g, '"');
 	sfwd_data = jQuery.parseJSON( sfwd_data );
 }
@@ -183,48 +183,85 @@ jQuery(document).ready(function() {
 });
 
 function learndash_lesson_edit_page_javascript() {
+
+	jQuery("[name='sfwd-lessons_lesson_assignment_points_enabled']").change(function(){
+		checked = jQuery("[name=sfwd-lessons_lesson_assignment_points_enabled]:checked").length;
+		if(checked) {
+			jQuery("#sfwd-lessons_lesson_assignment_points_amount").show();
+		}
+		else {
+			jQuery("#sfwd-lessons_lesson_assignment_points_amount").hide();
+			
+			// Clear out the Points amount value
+			jQuery("[name='sfwd-lessons_lesson_assignment_points_amount']").val('0'); 
+		}
+	});
+	if(jQuery("[name='sfwd-lessons_lesson_assignment_points_enabled']").length) {
+		jQuery("[name='sfwd-lessons_lesson_assignment_points_enabled']").change();
+	}
+
 	jQuery("[name='sfwd-lessons_lesson_assignment_upload']").change(function(){
 		checked = jQuery("[name=sfwd-lessons_lesson_assignment_upload]:checked").length;
 		if(checked) {
 			jQuery("#sfwd-lessons_auto_approve_assignment").show();
+			jQuery("#sfwd-lessons_lesson_assignment_points_enabled").show();
+			//jQuery("#sfwd-lessons_lesson_assignment_points_amount").show();
+			jQuery("[name='sfwd-lessons_lesson_assignment_points_enabled']").change();
 		}
 		else {
 			jQuery("#sfwd-lessons_auto_approve_assignment").hide();
+			jQuery("#sfwd-lessons_lesson_assignment_points_enabled").hide();
+			//jQuery("#sfwd-lessons_lesson_assignment_points_amount").hide();
+			jQuery("[name='sfwd-lessons_lesson_assignment_points_enabled']").change();
 		}
 	});
-	if(jQuery("[name='sfwd-lessons_lesson_assignment_upload']"))
-	jQuery("[name='sfwd-lessons_lesson_assignment_upload']").change();
+
+	if(jQuery("[name='sfwd-lessons_lesson_assignment_upload']").length) {
+		jQuery("[name='sfwd-lessons_lesson_assignment_upload']").change();
+	}
+
+
+
     load_datepicker();	
 }
 function load_datepicker() {
-    jQuery( "input[name='sfwd-lessons_visible_after_specific_date']" ).datepicker({
-			changeMonth: true,
-			changeYear: true,
-            dateFormat : 'MM d, yy',
-            onSelect: function(dateText, inst) {
-                 jQuery("input[name='sfwd-lessons_visible_after']").val('0');
-             jQuery("input[name='sfwd-lessons_visible_after']").prop('disabled', true);
-             }
-		});       
+	
+	// Wait until the #ui-datepicker-div element is added to the DOM
+	jQuery(document).on('DOMNodeInserted', function(e) {
+		if (e.target.id == 'ui-datepicker-div') {
+			jQuery('#ui-datepicker-div').addClass('learndash-datepicker');
+		}
+	});
+
+	jQuery( "input[name='sfwd-lessons_visible_after_specific_date']" ).datepicker({
+		changeMonth: true,
+		changeYear: true,
+        dateFormat : 'MM d, yy',
+        onSelect: function(dateText, inst) {
+			jQuery("input[name='sfwd-lessons_visible_after']").val('0');
+			jQuery("input[name='sfwd-lessons_visible_after']").prop('disabled', true);
+		}
+	});       
+    
+    jQuery("input[name='sfwd-lessons_visible_after_specific_date']").blur(function() {
+		var specific_data = jQuery("input[name='sfwd-lessons_visible_after_specific_date']").val();
+		if( specific_data != '') {
+			jQuery("input[name='sfwd-lessons_visible_after']").val('0');
+			jQuery("input[name='sfwd-lessons_visible_after']").attr("disabled", "disabled");
+		} else {
+			jQuery("input[name='sfwd-lessons_visible_after']").removeAttr("disabled");
+		}
+    });
         
-        jQuery("input[name='sfwd-lessons_visible_after_specific_date']").blur(function() {
-            var specific_data = jQuery("input[name='sfwd-lessons_visible_after_specific_date']").val();
-            if( specific_data != '') {
-            jQuery("input[name='sfwd-lessons_visible_after']").val('0');
-           jQuery("input[name='sfwd-lessons_visible_after']").attr("disabled", "disabled");
-           }else {
-             jQuery("input[name='sfwd-lessons_visible_after']").removeAttr("disabled");
-           }
-        });
-        jQuery("input[name='sfwd-lessons_visible_after']").click(function() {
-             var specific_data = jQuery("input[name='sfwd-lessons_visible_after_specific_date']").val();
-            if( specific_data != '') {
-            jQuery("input[name='sfwd-lessons_visible_after']").val('0');
-           jQuery("input[name='sfwd-lessons_visible_after']").attr("disabled", "disabled");
-           }else {
-             jQuery("input[name='sfwd-lessons_visible_after']").removeAttr("disabled");
-           }
-            });
+	jQuery("input[name='sfwd-lessons_visible_after']").click(function() {
+		var specific_data = jQuery("input[name='sfwd-lessons_visible_after_specific_date']").val();
+		if( specific_data != '') {
+			jQuery("input[name='sfwd-lessons_visible_after']").val('0');
+			jQuery("input[name='sfwd-lessons_visible_after']").attr("disabled", "disabled");
+		} else {
+			jQuery("input[name='sfwd-lessons_visible_after']").removeAttr("disabled");
+		}
+	});
 }
 function learndash_course_edit_page_javascript() {
 	jQuery("select[name=sfwd-courses_course_price_type]").change(function(){
@@ -329,19 +366,46 @@ function learndash_quiz_edit_page_javascript() {
 		jQuery("#postimagediv").addClass("hidden_by_sfwd_lms_sfwd_module.js");
 		jQuery("#postimagediv").hide(); //Hide the Featured Image Metabox
 }
+
+// Handle checkbox combination logic for Lesson Topics
 function learndash_topic_edit_page_javascript() {
 
-	jQuery("[name='sfwd-topic_lesson_assignment_upload']").change(function(){
+	jQuery('[name="sfwd-topic_lesson_assignment_upload"]').change(function(){
 		checked = jQuery("[name=sfwd-topic_lesson_assignment_upload]:checked").length;
 		if(checked) {
 			jQuery("#sfwd-topic_auto_approve_assignment").show();
+			jQuery("#sfwd-topic_lesson_assignment_points_enabled").show();
 		}
 		else {
 			jQuery("#sfwd-topic_auto_approve_assignment").hide();
+			jQuery("#sfwd-topic_lesson_assignment_points_enabled").hide();
+
+			jQuery("[name='sfwd-topic_lesson_assignment_points_enabled']").prop('checked', false); 
+			jQuery("[name='sfwd-topic_lesson_assignment_points_enabled']").change();
 		}
 	});
-	if(jQuery("[name='sfwd-topic_lesson_assignment_upload']"))
-	jQuery("[name='sfwd-topic_lesson_assignment_upload']").change();
+	
+	if(jQuery("[name='sfwd-topic_lesson_assignment_upload']").length) {
+		jQuery("[name='sfwd-topic_lesson_assignment_upload']").change();
+	}
+	
+	jQuery('[name="sfwd-topic_lesson_assignment_points_enabled"]').change(function(){
+		checked = jQuery("[name=sfwd-topic_lesson_assignment_points_enabled]:checked").length;
+		if(checked) {
+			jQuery("#sfwd-topic_lesson_assignment_points_amount").show();
+		} else {
+			jQuery("#sfwd-topic_lesson_assignment_points_amount").hide();
+			
+			// Clear out the Points amount value
+			jQuery("[name='sfwd-topic_lesson_assignment_points_amount']").val('0'); 
+			
+		}
+	});
+	
+	if(jQuery("[name='sfwd-topic_lesson_assignment_points_enabled']").length) {
+		jQuery("[name='sfwd-topic_lesson_assignment_points_enabled']").change();
+	}
+	
 
 
 		jQuery("select[name=sfwd-topic_course]").change(function() {
@@ -372,3 +436,39 @@ function learndash_topic_edit_page_javascript() {
 		});	
 }
 
+// The following functions are also found in /templates/learndash_template_script.js but as that is a template and the admin 
+// can choose to remove them I copied them into this JS file loaded for admin. I couldn't take the chance the admin 
+// would create a version in the theme and remove the functions. 
+if (typeof flip_expand_collapse == 'undefined') {
+	function flip_expand_collapse(what, id) {
+	    //console.log(id + ':' + document.getElementById( 'list_arrow.flippable-'+id).className);
+	    if (jQuery( what + '-' + id + ' .list_arrow.flippable' ).hasClass( 'expand' ) ) {
+	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).removeClass( 'expand' );
+	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).addClass( 'collapse' );
+	        jQuery( what + '-' + id + ' .flip' ).slideUp();
+	    } else {
+	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).removeClass( 'collapse' );
+	        jQuery( what + '-' + id + ' .list_arrow.flippable' ).addClass( 'expand' );
+	        jQuery( what + '-' + id + ' .flip' ).slideDown();
+	    }
+	    return false;
+	}
+}
+
+if (typeof flip_expand_all == 'undefined') {
+	function flip_expand_all(what) {
+	    jQuery( what + ' .list_arrow.flippable' ).removeClass( 'collapse' );
+	    jQuery( what + ' .list_arrow.flippable' ).addClass( 'expand' );
+	    jQuery( what + ' .flip' ).slideDown();
+	    return false;
+	}
+}
+
+if (typeof flip_collapse_all == 'undefined') {
+	function flip_collapse_all(what) {
+	    jQuery( what + ' .list_arrow.flippable' ).removeClass( 'expand' );
+	    jQuery( what + ' .list_arrow.flippable' ).addClass( 'collapse' );
+	    jQuery( what + ' .flip' ).slideUp();
+	    return false;
+	}
+}

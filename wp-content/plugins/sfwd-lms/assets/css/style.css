@@ -175,7 +175,25 @@ margin: 20px 50px;
 	display: none;
 }
 
-
 .wp-admin.post-type-sfwd-assignment h2 a.add-new-h2 {display: none;}
 
+#learndash_assignment_metabox .button {
+	margin-right: 10px;
+}
 
+
+#learndash_essay_status_div #post_status {
+	width: 100%;
+}
+
+#learndash_essay_status_div .inside {
+	padding: 0;
+}
+
+#learndash_essay_grading_response_div #grading-response {
+	width: 100%
+}
+
+.learndash_uploaded_assignment_points {
+	font-size: 12px;
+}

@@ -116,33 +116,38 @@ class WpProQuiz_View_GobalSettings extends WpProQuiz_View_View {
 								</fieldset>
 							</td>
 						</tr>
-						
-						<tr style="display:none;">
+						<?php if (count($this->category)) { ?>
+						<tr>
 							<th scope="row">
-								<?php _e('Category management', 'wp-pro-quiz'); ?>
+								<?php _e('Question Category management', 'wp-pro-quiz'); ?>
 							</th>
 							<td>
 								<fieldset>
 									<legend class="screen-reader-text">
-										<span><?php _e('Category management', 'wp-pro-quiz'); ?></span>
+										<span><?php _e('Question Category management', 'wp-pro-quiz'); ?></span>
 									</legend>
 									<select name="category">
+										<option value=""><?php _e('Select Question Category', 'wp-pro-quiz'); ?></option>
 										<?php foreach($this->category as $cat) { 
 											echo '<option value="'.$cat->getCategoryId().'">'.$cat->getCategoryName().'</option>';
-											
 										} ?>
 									</select>
 									<div style="padding-top: 5px;">
-										<input type="text" value="" name="categoryEditText">
+										<input type="text" value="" name="categoryEditText" class="regular-text" />
 									</div>
 									<div style="padding-top: 5px;">
-										<input type="button" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="categoryDelete" class="button-secondary">
-										<input type="button" value="<?php _e('Edit', 'wp-pro-quiz'); ?>" name="categoryEdit" class="button-secondary">
+										<input type="button" title="<?php _e('Delete selected Question Category', 'wp-pro-quiz') ?>" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="categoryDelete" class="button-secondary">
+										<input type="button" title="<?php _e('Save changed to selected Question Category', 'wp-pro-quiz') ?>" value="<?php _e('Save Changes', 'wp-pro-quiz'); ?>" name="categoryEdit" class="button-secondary">
+										<div class="categorySpinner spinner"></div>
+										<span class="categoryEditUpdate" style="display:none"><?php _e('Question Category Saved', 'wp-pro-quiz') ?></span>
+										<span class="categoryDeleteUpdate" style="display:none"><?php _e('Question Category Deleted', 'wp-pro-quiz') ?></span>
 									</div>
 								</fieldset>
 							</td>
 						</tr>
-						<tr style="display:none;">
+						<?php } ?>
+						<?php if (count($this->templateQuiz)) { ?>
+						<tr>
 							<th scope="row">
 								<?php _e('Quiz template management', 'wp-pro-quiz'); ?>
 							</th>
@@ -152,22 +157,29 @@ class WpProQuiz_View_GobalSettings extends WpProQuiz_View_View {
 										<span><?php _e('Quiz template management', 'wp-pro-quiz'); ?></span>
 									</legend>
 									<select name="templateQuiz">
+										<option value=""><?php _e('Select Quiz template', 'wp-pro-quiz'); ?></option>
 										<?php foreach($this->templateQuiz as $templateQuiz) { 
 											echo '<option value="'.$templateQuiz->getTemplateId().'">'.esc_html($templateQuiz->getName()).'</option>';
 											
 										} ?>
 									</select>
 									<div style="padding-top: 5px;">
-										<input type="text" value="" name="templateQuizEditText">
+										<input type="text" value="" name="templateQuizEditText" class="regular-text" />
 									</div>
 									<div style="padding-top: 5px;">
-										<input type="button" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="templateQuizDelete" class="button-secondary">
-										<input type="button" value="<?php _e('Edit', 'wp-pro-quiz'); ?>" name="templateQuizEdit" class="button-secondary">
+										<input type="button" title="<?php _e('Delete selected Quiz template', 'wp-pro-quiz') ?>" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="templateQuizDelete" class="button-secondary">
+										<input type="button" title="<?php _e('Save changed to selected Quiz template', 'wp-pro-quiz') ?>" value="<?php _e('Save Changes', 'wp-pro-quiz'); ?>" name="templateQuizEdit" class="button-secondary">
+										<div class="templateQuizSpinner spinner"></div>
+										<span class="templateQuizEditUpdate" style="display:none"><?php _e('Quiz template Saved', 'wp-pro-quiz') ?></span>
+										<span class="templateQuizDeleteUpdate" style="display:none"><?php _e('Quiz template Deleted', 'wp-pro-quiz') ?></span>
+										
 									</div>
 								</fieldset>
 							</td>
 						</tr>
-						<tr style="display:none;">
+						<?php } ?>
+						<?php if (count($this->templateQuestion)) { ?>
+						<tr>
 							<th scope="row">
 								<?php _e('Question template management', 'wp-pro-quiz'); ?>
 							</th>
@@ -177,21 +189,28 @@ class WpProQuiz_View_GobalSettings extends WpProQuiz_View_View {
 										<span><?php _e('Question template management', 'wp-pro-quiz'); ?></span>
 									</legend>
 									<select name="templateQuestion">
+										<option value=""><?php _e('Select Question template', 'wp-pro-quiz'); ?></option>
+										
 										<?php foreach($this->templateQuestion as $templateQuestion) { 
 											echo '<option value="'.$templateQuestion->getTemplateId().'">'.esc_html($templateQuestion->getName()).'</option>';
 											
 										} ?>
 									</select>
 									<div style="padding-top: 5px;">
-										<input type="text" value="" name="templateQuestionEditText">
+										<input type="text" value="" name="templateQuestionEditText" class="regular-text" />
 									</div>
 									<div style="padding-top: 5px;">
-										<input type="button" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="templateQuestionDelete" class="button-secondary">
-										<input type="button" value="<?php _e('Edit', 'wp-pro-quiz'); ?>" name="templateQuestionEdit" class="button-secondary">
+										<input type="button" title="<?php _e('Delete selected Question template', 'wp-pro-quiz') ?>" value="<?php _e('Delete', 'wp-pro-quiz'); ?>" name="templateQuestionDelete" class="button-secondary">
+										<input type="button" title="<?php _e('Save changed to selected Question template', 'wp-pro-quiz') ?>" value="<?php _e('Save Changes', 'wp-pro-quiz'); ?>" name="templateQuestionEdit" class="button-secondary"> 
+										<div class="templateQuestionSpinner spinner"></div>
+										<span class="templateQuestionEditUpdate" style="display:none"><?php _e('Question template Saved', 'wp-pro-quiz') ?></span>
+										<span class="templateQuestionDeleteUpdate" style="display:none"><?php _e('Question template Deleted', 'wp-pro-quiz') ?></span>
+										
 									</div>
 								</fieldset>
 							</td>
 						</tr>
+						<?php } ?>
 					</tbody>
 				</table>
 			</div>

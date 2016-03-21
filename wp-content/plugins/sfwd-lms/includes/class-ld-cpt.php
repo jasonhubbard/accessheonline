@@ -189,6 +189,8 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 		 * @return string          	 shortcode output
 		 */
 		static function loop_shortcode( $atts, $content = null ) {
+			global $learndash_shortcode_used;
+			
 			$args = array(
 				'pagination'      => '',
 				'posts_per_page'  => '',
@@ -285,7 +287,7 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 							$status = 'notcompleted';
 						} else {
 							$status    = 'notavailable';
-							$sub_title = "<small class='notavailable_message'>" . sprintf( __( ' Available on: %s ', 'learndash' ), date_i18n( 'd-M-Y', $ld_lesson_access_from ) ) . '</small>';
+							$sub_title = "<small class='notavailable_message'>" . sprintf( __( ' Available on: %s ', 'learndash' ), learndash_adjust_date_time_display( $ld_lesson_access_from ) ) . '</small>';
 						}
 					}
 
@@ -340,6 +342,9 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 			}
 
 			wp_reset_query();
+			
+			$learndash_shortcode_used = true;
+			
 			return $buf;
 		}
 
@@ -379,6 +384,8 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 		 * @return string          	 shortcode output
 		 */
 		function shortcode( $atts, $content = null, $code ) {
+			global $learndash_shortcode_used;
+			
 			extract( 
 				shortcode_atts( 
 					array(
@@ -412,6 +419,9 @@ if ( ! class_exists( 'SFWD_CPT' ) ) {
 			$buf      = do_shortcode( $template );
 
 			$shortcode_tags = $save_tags;
+			
+			$learndash_shortcode_used = true;
+			
 			return $buf;
 		}
 

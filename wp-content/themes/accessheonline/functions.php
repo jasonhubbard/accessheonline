@@ -129,6 +129,9 @@ function html5blank_styles()
 	
 	wp_register_style('skeleton', get_template_directory_uri() . '/css/skeleton.css', array(), '1.0', 'all');
     wp_enqueue_style('skeleton'); // Enqueue it!
+	
+	#wp_register_style('learndash', get_template_directory_uri() . '/learndash/learndash_template_style.css', array(), '1.0', 'all');
+    #wp_enqueue_style('learndash'); // Enqueue it!
 
     wp_register_style('html5blank', get_template_directory_uri() . '/style.css', array(), '1.0', 'all');
     wp_enqueue_style('html5blank'); // Enqueue it!

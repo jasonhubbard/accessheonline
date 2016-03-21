@@ -7,7 +7,7 @@ class WpProQuiz_Model_Quiz extends WpProQuiz_Model_Model {
 	
 	const QUIZ_TOPLIST_TYPE_ALL = 1;
 	const QUIZ_TOPLIST_TYPE_ONLY_USER = 2;
-	const QUIZ_TOPLIST_TYPE_ONLY_ANONYM = 3;
+	const QUIZ_TOPLIST_dTYPE_ONLY_ANONYM = 3;
 	
 	const QUIZ_TOPLIST_SORT_BEST = 1;
 	const QUIZ_TOPLIST_SORT_NEW = 2;
@@ -39,6 +39,7 @@ class WpProQuiz_Model_Quiz extends WpProQuiz_Model_Model {
 	protected $_questionRandom = false;
 	protected $_answerRandom = false;
 	protected $_timeLimit = 0;
+	protected $_timeLimitCookie = 0;
 	protected $_statisticsOn = false;
 	protected $_statisticsIpLock = 1440;
 	protected $_resultGradeEnabled = false;
@@ -102,6 +103,10 @@ class WpProQuiz_Model_Quiz extends WpProQuiz_Model_Model {
 	
 	public function setId($_id) {
 		$this->_id = (int)$_id;
+		
+		$this->_quiz_post_id = learndash_get_quiz_id_by_pro_quiz_id( $this->_id );
+		//error_log('id['. $this->_id .'] quiz_id['. $this->_quiz_post_id .']');
+		
 		return $this;
 	}
 	
@@ -170,6 +175,22 @@ class WpProQuiz_Model_Quiz extends WpProQuiz_Model_Model {
 	
 	public function getTimeLimit() {
 		return $this->_timeLimit;
+	}
+
+	public function setTimeLimitCookie($_timeLimitCookie) {
+		$this->_timeLimitCookie = (int)$_timeLimitCookie;
+		return $this;
+	}
+
+	// The TimeLimitCookie var does NOT follow the convention for the WPProQuiz in that it is not stored into the wp_wp_pro_quiz_master table
+	// Instead it is read from and save to the post meta table
+	public function getTimeLimitCookie() {
+		$this->_timeLimitCookie = get_post_meta($this->_quiz_post_id, '_timeLimitCookie', true);
+		return $this->_timeLimitCookie;
+	}
+	
+	public function saveTimeLimitCookie() {
+		return update_post_meta( $this->_quiz_post_id, '_timeLimitCookie', $this->_timeLimitCookie );;
 	}
 	
 	public function setStatisticsOn($_statisticsOn) {

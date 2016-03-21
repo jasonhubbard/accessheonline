@@ -22,8 +22,6 @@ class Lesson_Widget extends WP_Widget {
 	protected $post_name = 'Lesson';
 	protected $post_args;
 
-
-
 	/**
 	 * Set up post arguments for widget
 	 *
@@ -41,8 +39,6 @@ class Lesson_Widget extends WP_Widget {
 		parent::__construct( "{$this->post_type}-widget", $this->post_name, $args );
 	}
 
-
-
 	/**
 	 * Displays widget
 	 *
@@ -53,6 +49,7 @@ class Lesson_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	public function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
 
 		extract( $args, EXTR_SKIP );
 
@@ -92,6 +89,8 @@ class Lesson_Widget extends WP_Widget {
 		$buf .= '</ul>' . $after_widget;
 
 		echo $buf;
+
+		$learndash_shortcode_used = true;
 
 	}
 
@@ -183,8 +182,6 @@ class Course_Widget extends WP_Widget {
 	protected $post_name = 'Course';
 	protected $post_args;
 
-
-
 	/**
 	 * Set up post arguments for widget
 	 *
@@ -216,7 +213,8 @@ class Course_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	public function widget( $args, $instance ) {
-
+		global $learndash_shortcode_used;
+		
 		extract( $args, EXTR_SKIP );
 
 		/* Before Widget content */
@@ -251,6 +249,7 @@ class Course_Widget extends WP_Widget {
 
 		echo $buf;
 
+		$learndash_shortcode_used = true;
 	}
 
 
@@ -313,8 +312,6 @@ class Quiz_Widget extends WP_Widget {
 	protected $post_name = 'Quiz';
 	protected $post_args;
 
-
-
 	/**
 	 * Set up post arguments for widget
 	 *
@@ -346,6 +343,7 @@ class Quiz_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	public function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
 
 		extract( $args, EXTR_SKIP );
 
@@ -381,6 +379,7 @@ class Quiz_Widget extends WP_Widget {
 
 		echo $buf;
 
+		$learndash_shortcode_used = true;
 	}
 
 
@@ -443,8 +442,6 @@ class Transactions_Widget extends WP_Widget {
 	protected $post_name = 'Transactions';
 	protected $post_args;
 
-
-
 	/**
 	 * Set up post arguments for widget
 	 *
@@ -476,6 +473,7 @@ class Transactions_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	public function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
 
 		extract( $args, EXTR_SKIP );
 
@@ -511,6 +509,7 @@ class Transactions_Widget extends WP_Widget {
 
 		echo $buf;
 
+		$learndash_shortcode_used = true;
 	}
 
 
@@ -573,8 +572,6 @@ class Certificates_Widget extends WP_Widget {
 	protected $post_name = 'Certificates';
 	protected $post_args;
 
-
-
 	/**
 	 * Set up post arguments for widget
 	 *
@@ -607,6 +604,7 @@ class Certificates_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	public function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
 
 		extract( $args, EXTR_SKIP );
 
@@ -642,6 +640,7 @@ class Certificates_Widget extends WP_Widget {
 
 		echo $buf;
 
+		$learndash_shortcode_used = true;
 	}
 
 

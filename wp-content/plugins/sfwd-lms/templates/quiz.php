@@ -48,7 +48,7 @@ if( $show_content ) {
         echo $quiz_content;
     } else {
 		?>
-			<p id="learndash_already_taken"><?php echo sprintf( __( 'You have already taken this quiz %d times and may not take it again.', 'learndash' ), $attempts_count ); ?></p>
+			<p id="learndash_already_taken"><?php echo sprintf( __( 'You have already taken this quiz %d time(s) and may not take it again.', 'learndash' ), $attempts_count ); ?></p>
 		<?php
     }
 }

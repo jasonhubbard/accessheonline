@@ -29,15 +29,8 @@
 	<div class="profile_info clear_both">
 		<div class="profile_avatar">
 			<?php echo get_avatar( $current_user->user_email, 96 ); ?>
-
-
-            <?php
-            /**
-             * @todo The edit profile link is broken.
-             */
-            ?>
 			<div class="profile_edit_profile" align="center">
-                <a href='<?php get_edit_user_link(); ?>'><?php __( 'Edit profile', 'learndash' ); ?></a>
+                <a href='<?php echo get_edit_user_link(); ?>'><?php _e( 'Edit profile', 'learndash' ); ?></a>
             </div>
         </div>
 
@@ -51,7 +44,7 @@
 	</div>
 
 	<div class="learndash_profile_heading no_radius clear_both">
-			<span><?php _e( 'Registered Courses', 'learndash' ); ?></span>
+			<span><?php printf( _x( 'Registered %s', 'Registered Courses Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ); ?></span>
 			<span class="ld_profile_status"><?php _e( 'Status', 'learndash' ); ?></span>
 	</div>
 
@@ -87,7 +80,7 @@
 
 						<div class="flip" style="display:none;">
 
-							<div class="learndash_profile_heading course_overview_heading"><?php _e( 'Course Progress Overview', 'learndash' ); ?></div>
+							<div class="learndash_profile_heading course_overview_heading"><?php printf( _x( '%s Progress Overview', 'Course Progress Overview Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></div>
 
 							<div>
 								<dd class="course_progress" title='<?php echo sprintf( __( '%s out of %s steps completed', 'learndash' ), $progress['completed'], $progress['total'] ); ?>'>
@@ -103,7 +96,7 @@
 								<div class="learndash_profile_quizzes clear_both">
 
 									<div class="learndash_profile_quiz_heading">
-										<div class="quiz_title"><?php _e( 'Quizzes', 'learndash' ); ?></div>
+										<div class="quiz_title"><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></div>
 										<div class="certificate"><?php _e( 'Certificate', 'learndash' ); ?></div>
 										<div class="scores"><?php _e( 'Score', 'learndash' ); ?></div>
 										<div class="quiz_date"><?php _e( 'Date', 'learndash' ); ?></div>
@@ -111,9 +104,14 @@
 
 									<?php foreach ( $quiz_attempts[ $course_id ] as $k => $quiz_attempt ) : ?>
 										<?php
-										    $certificateLink = @$quiz_attempt['certificate']['certificateLink'];
-
-										    $status = empty( $quiz_attempt['pass'] ) ? 'failed' : 'passed';
+											$certificateLink = null;
+											
+											if ( true === $quiz_attempt['has_graded'] && true === LD_QuizPro::quiz_attempt_has_ungraded_question( $quiz_attempt ) ) {
+												$status = 'pending';
+											} else {
+												$certificateLink = @$quiz_attempt['certificate']['certificateLink'];
+												$status = empty( $quiz_attempt['pass'] ) ? 'failed' : 'passed';
+											}
 
 										    $quiz_title = ! empty( $quiz_attempt['post']->post_title) ? $quiz_attempt['post']->post_title : @$quiz_attempt['quiz_title'];
 
@@ -136,9 +134,15 @@
 													<?php endif; ?>
 												</div>
 
-												<div class="scores"><?php echo round( $quiz_attempt['percentage'], 2 ); ?>%</div>
+												<div class="scores">
+													<?php if ( true === $quiz_attempt['has_graded'] && true === LD_QuizPro::quiz_attempt_has_ungraded_question( $quiz_attempt ) ) : ?>
+														<?php echo _x('Pending', 'Pending Certificate Status Label', 'learndash'); ?>
+													<?php else : ?>
+														<?php echo round( $quiz_attempt['percentage'], 2 ); ?>%
+													<?php endif; ?>
+												</div>
 
-												<div class="quiz_date"><?php echo date_i18n( 'd-M-Y', $quiz_attempt['time'] ); ?></div>
+												<div class="quiz_date"><?php echo learndash_adjust_date_time_display(  $quiz_attempt['time'] ); ?></div>
 
 											</div>
 										<?php endif; ?>

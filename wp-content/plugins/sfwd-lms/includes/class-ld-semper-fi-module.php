@@ -597,13 +597,21 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 	 *
 	 */
 	function enqueue_styles() {
+		global $learndash_assets_loaded;
+
 		wp_enqueue_style( 'thickbox' );
 
 		if ( ! empty( $this->pointers) ) {
 			wp_enqueue_style( 'wp-pointer' );
 		}
 
-		wp_enqueue_style( 'sfwd-module-style', $this->plugin_path['url'] . 'assets/css/sfwd_module.css' );
+		wp_enqueue_style( 
+			'sfwd-module-style', 
+			LEARNDASH_LMS_PLUGIN_URL . 'assets/css/sfwd_module'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.css',
+			array(), 
+			LEARNDASH_VERSION 
+		);
+		$learndash_assets_loaded['styles']['sfwd-module-style'] = __FUNCTION__;	
 	}
 
 
@@ -615,6 +623,8 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 	 *
 	 */
 	function enqueue_scripts() {
+		global $learndash_assets_loaded;
+
 		wp_enqueue_script( 'jquery' );
 
 		if ( is_admin() ) {
@@ -631,8 +641,8 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 
 		$this->script_data['learndash_categories_lang']     = __( 'LearnDash Categories', 'learndash' );
 		$this->script_data['loading_lang']                  = __( 'Loading...', 'learndash' );
-		$this->script_data['select_a_lesson_lang']          = __( '-- Select a Lesson --', 'learndash' );
-		$this->script_data['select_a_lesson_or_topic_lang'] = __( '-- Select a Lesson or Topic --', 'learndash' );
+		$this->script_data['select_a_lesson_lang']          = sprintf( _x( '-- Select a %s --', 'Select a Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) );
+		$this->script_data['select_a_lesson_or_topic_lang'] = sprintf( _x( '-- Select a %s or %s --', 'Select a Lesson Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topic' ) );
 		$this->script_data['advanced_quiz_preview_link']    = admin_url( 'admin.php?page=ldAdvQuiz&module=preview&id=' );
 
 		global $post;
@@ -641,7 +651,15 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 			$this->script_data['quiz_pro'] = intval( learndash_get_setting( $post->ID, 'quiz_pro' ) );
 		}
 
-		wp_enqueue_script( 'sfwd-module-script', $this->plugin_path['url'] . 'assets/js/sfwd_module.js', array( 'jquery' ) );
+		wp_enqueue_script( 
+			'sfwd-module-script', 
+			LEARNDASH_LMS_PLUGIN_URL . '/assets/js/sfwd_module'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.js', 
+			array( 'jquery' ), 
+			LEARNDASH_VERSION,
+			true 
+		);
+		$learndash_assets_loaded['scripts']['sfwd-module-script'] = __FUNCTION__;	
+		
 		$data = array();
 
 		if ( ! empty( $this->script_data ) ) {
@@ -651,19 +669,16 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 		$data = array( 'json' => json_encode( $data ) );
 		wp_localize_script( 'sfwd-module-script', 'sfwd_data', $data );
 
-		$filepath = locate_template( array('learndash/learndash_template_script.js') );
-
-		if ( $filepath && file_exists( $filepath ) ) {
-			wp_enqueue_script( 'sfwd_template_js', get_stylesheet_directory_uri() . '/learndash/learndash_template_script.js', array( 'jquery' ) );
-		} else {
-			$filepath = locate_template( 'learndash_template_script.js' );
-
-			if ( $filepath && file_exists( $filepath ) ) {
-				wp_enqueue_script( 'sfwd_template_js', get_stylesheet_directory_uri() . '/learndash_template_script.js', array( 'jquery' ) );
-			} else if ( file_exists( dirname( __FILE__ ) . '/templates/learndash_template_script.js' ) ) {
-				wp_enqueue_script( 'sfwd_template_js', plugins_url( 'templates/learndash_template_script.js', __FILE__ ), array( 'jquery' ) );
-			}
+		// First check if the theme has the file learndash/learndash_template_script.js or learndash_template_script.js file
+		$filepath = locate_template( array( 'learndash/learndash_template_script.js', 'learndash_template_script.js' ) );
+		if ( !empty( $filepath ) ) {
+			wp_enqueue_script( 'sfwd_template_js', str_replace( ABSPATH, '/', $filepath ), array( 'jquery' ), LEARNDASH_VERSION, true );
+			$learndash_assets_loaded['scripts']['sfwd_template_js'] = __FUNCTION__;
+		} else if ( file_exists( LEARNDASH_LMS_PLUGIN_DIR .'/templates/learndash_template_script.js' ) ) {
+			wp_enqueue_script( 'sfwd_template_js', LEARNDASH_LMS_PLUGIN_URL . 'templates/learndash_template_script.js', array( 'jquery' ), LEARNDASH_VERSION, true );
+			$learndash_assets_loaded['scripts']['sfwd_template_js'] = __FUNCTION__;
 		}
+
 	}
 
 
@@ -1062,16 +1077,37 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 				if ( $value ) {
 						$attr .= ' CHECKED';
 				}
-				$buf .= "<input name='$name' type='{$options['type']}' $attr>\n";
+				$buf .= "<input name='$name' type='{$options['type']}' $attr />\n";
 				break;
 			case 'textarea':$buf .= "<textarea name='$name' $attr>$value</textarea>";
 				break;
 			case 'image':$buf .= "<input class='sfwd_upload_image_button' type='button' value='" . __( 'Upload Image', 'learndash' ) . "' style='float:left;' />" .
-				"<input class='sfwd_upload_image_label' name='$name' type='text' readonly $attr value='$value' size=57 style='float:left;clear:left;'>\n";
+				"<input class='sfwd_upload_image_label' name='$name' type='text' readonly $attr value='$value' size=57 style='float:left;clear:left;' />\n";
 				break;
 			case 'html':$buf .= $value;
 				break;
-			default:$buf .= "<input name='$name' type='{$options['type']}' $attr value='$value'>\n";
+				
+			case 'number':
+				if (isset($options['min'])) {
+					$min = ' min="'. $options['min'] .'" ';
+				} else {
+					$min = '';
+				}
+				
+				if (isset($options['step'])) {
+					$step = ' step="'. $options['step'] .'" ';
+				} else {
+					if (!empty($min)) {
+						$step = ' step="1" ';
+					} else {
+						$step = '';
+					}
+				}
+				
+				$buf .= "<input name='$name' type='{$options['type']}' $attr $min $step value='$value' />\n";
+				break;
+				
+			default:$buf .= "<input name='$name' type='{$options['type']}' $attr value='$value' />\n";
 		}
 
 		if ( ! empty( $options['count'] ) ) {
@@ -1497,8 +1533,8 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 
 		?>
 		<div id="dropmessage" class="updated" style="display:none;"></div>
-			<div class="wrap">
-				<h2><?php echo $name;?></h2>
+			<div id="learndash-settings" class="wrap">
+				<h1><?php echo $name;?></h1>
 
 				<?php
 					/**
@@ -1567,7 +1603,7 @@ if ( ! class_exists( 'Semper_Fi_Module' ) ) {
 								'Submit_Default' => array(
 									'type' => 'submit',
 									'class' => 'button-primary',
-									'value' => sprintf( __( 'Reset %s Settings to Defaults', 'learndash' ), $name ) . ' &raquo;',
+									'value' => __( 'Reset to Defaults', 'learndash' ) . ' &raquo;',
 								),
 							);
 

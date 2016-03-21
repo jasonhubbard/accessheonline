@@ -51,7 +51,7 @@
 	<?php if ( ! empty( $topics ) ) : ?>
 		<div id="learndash_lesson_topics_list">
             <div id='learndash_topic_dots-<?php echo esc_attr( $post->ID ); ?>' class="learndash_topic_dots type-list">
-                <strong><?php _e( 'Lesson Topics', 'learndash'); ?></strong>
+                <strong><?php printf( _x( '%s %s', 'Lesson Topics Label', 'learndash'), LearnDash_Custom_Label::get_label( 'lesson' ), LearnDash_Custom_Label::get_label( 'topics' ) ); ?></strong>
                 <ul>
                     <?php $odd_class = ''; ?>
 
@@ -83,7 +83,7 @@
     ?>
 	<?php if ( ! empty( $quizzes ) ) : ?>
 		<div id="learndash_quizzes">
-			<div id="quiz_heading"><span><?php _e( 'Quizzes', 'learndash' ); ?></span><span class="right"><?php _e( 'Status', 'learndash' ); ?></span></div>
+			<div id="quiz_heading"><span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></span><span class="right"><?php _e( 'Status', 'learndash' ); ?></span></div>
 			<div id="quiz_list">
 
 			<?php foreach ( $quizzes as $quiz ) : ?>
@@ -114,7 +114,11 @@
 				<?php if ( ! empty( $assignments ) ) : ?>
 					<?php foreach( $assignments as $assignment ) : ?>
 						<tr>
-							<td><a href='<?php echo esc_attr( get_post_meta( $assignment->ID, 'file_link', true ) ); ?>' target="_blank"><?php echo __( 'Download', 'learndash' ) . ' ' . get_post_meta( $assignment->ID, 'file_name', true ); ?></a></td>
+							<td>
+								<a href='<?php echo esc_attr( get_post_meta( $assignment->ID, 'file_link', true ) ); ?>' target="_blank"><?php echo __( 'Download', 'learndash' ) . ' ' . get_post_meta( $assignment->ID, 'file_name', true ); ?></a>
+								<br />
+								<span class="learndash_uploaded_assignment_points"><?php echo learndash_assignment_points_awarded( $assignment->ID ); ?></span>
+							</td>
 							<td><a href='<?php echo esc_attr( get_permalink( $assignment->ID ) ); ?>'><?php _e( 'Comments', 'learndash' ); ?></a></td>
 						</tr>
 					<?php endforeach; ?>

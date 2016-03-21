@@ -2,13 +2,15 @@
 class WpProQuiz_Controller_Preview extends WpProQuiz_Controller_Controller {
 	
 	public function route() {
+		global $learndash_assets_loaded;
 		
 		wp_enqueue_script(
 			'wpProQuiz_front_javascript', 
-			plugins_url('js/wpProQuiz_front'.(WPPROQUIZ_DEV ? '' : '.min').'.js', WPPROQUIZ_FILE),
+			plugins_url('js/wpProQuiz_front'. ( ( defined( 'WPPROQUIZ_DEV' ) && WPPROQUIZ_DEV ) ? '' : '.min') .'.js', WPPROQUIZ_FILE),
 			array('jquery', 'jquery-ui-sortable'),
 			WPPROQUIZ_VERSION
 		);
+		$learndash_assets_loaded['scripts']['wpProQuiz_front_javascript'] = __FUNCTION__;
 		
 		wp_localize_script('wpProQuiz_front_javascript', 'WpProQuizGlobal', array(
 			'ajaxurl' => str_replace(array("http:", "https:"), array("",""), admin_url('admin-ajax.php')),
@@ -20,10 +22,11 @@ class WpProQuiz_Controller_Preview extends WpProQuiz_Controller_Controller {
 		
 		wp_enqueue_style(
 			'wpProQuiz_front_style', 
-			plugins_url('css/wpProQuiz_front'.(WPPROQUIZ_DEV ? '' : '.min').'.css', WPPROQUIZ_FILE),
+			plugins_url('css/wpProQuiz_front'. ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min') .'.css', WPPROQUIZ_FILE),
 			array(),
 			WPPROQUIZ_VERSION
 		);
+		$learndash_assets_loaded['styles']['wpProQuiz_front_style'] = __FUNCTION__;
 		
 		$this->showAction($_GET['id']);
 	}

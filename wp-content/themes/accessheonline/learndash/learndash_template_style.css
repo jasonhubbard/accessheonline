@@ -274,8 +274,9 @@ margin-right: 10px;
 	padding-left: 2%;
 	padding-right: 2%;
 }
+
 .learndash .notcompleted, #learndash_profile .notcompleted {
-	background: url(images/notcompleted.png) no-repeat;
+	background: url(images/notcompleted.png) no-repeat !important;
 	display: block;
     line-height: 53px;
 	background-position: 97.9% center;

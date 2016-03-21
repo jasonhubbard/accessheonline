@@ -170,6 +170,24 @@ class WpProQuiz_View_QuizEdit extends WpProQuiz_View_View {
 							</tr>
 							<tr>
 								<th scope="row">
+									<?php _e('Protect Quiz Answers in Browser Cookie', 'wp-pro-quiz'); ?>
+								</th>
+								<td>
+									<fieldset>
+										<legend class="screen-reader-text">
+											<span><?php _e('Use cookies for Quiz Answers', 'wp-pro-quiz'); ?></span>
+										</legend>
+										<label for="time_limit_cookie">
+											<input type="number" min="0" class="small-text" id="time_limit_cookie" value="<?php echo $this->quiz->getTimeLimitCookie(); ?>" name="timeLimitCookie"> <?php _e('Seconds', 'wp-pro-quiz'); ?>
+										</label>
+										<p class="description">
+											<?php _e("0 = Don't save answers. This option will save the user's answers into a browser cookie until the Quiz is submitted.", 'wp-pro-quiz'); ?>
+										</p>
+									</fieldset>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row">
 									<?php _e('Statistics', 'wp-pro-quiz'); ?>
 								</th>
 								<td>
@@ -1031,7 +1049,7 @@ class WpProQuiz_View_QuizEdit extends WpProQuiz_View_View {
 								</label>
 								<label>
 									<input name="toplistDataAddPermissions" type="radio" value="2" <?php echo $this->quiz->getToplistDataAddPermissions() == 2 ? 'checked="checked"' : ''; ?>>
-									<?php _e('registered useres only', 'wp-pro-quiz'); ?>
+									<?php _e('registered users only', 'wp-pro-quiz'); ?>
 								</label>
 								<label>
 									<input name="toplistDataAddPermissions" type="radio" value="3" <?php echo $this->quiz->getToplistDataAddPermissions() == 3 ? 'checked="checked"' : ''; ?>>

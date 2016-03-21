@@ -46,8 +46,15 @@ function learndash_certificate_details( $post_id, $user_id = null ) {
 	}
 
 	if ( ! empty( $certificateLink ) ) {
-		$certificateLink .= ( strpos( 'a'.$certificateLink,'?' ) ) ? '&' : '?';
-		$certificateLink .= "quiz={$post->ID}&print=" . wp_create_nonce( $post->ID . $user_id );
+		//$certificateLink .= ( strpos( 'a'.$certificateLink,'?' ) ) ? '&' : '?';
+		//$certificateLink .= "quiz={$post->ID}&print=" . wp_create_nonce( $post->ID . $user_id );
+		$certificateLink = add_query_arg(
+			array(
+				"quiz"	=>	$post->ID,
+				"print"	=>	wp_create_nonce( $post->ID . $user_id )
+			),
+			$certificateLink
+		);
 	}
 
 	return array( 'certificateLink' => $certificateLink, 'certificate_threshold' => $certificate_threshold );
@@ -64,6 +71,9 @@ function learndash_certificate_details( $post_id, $user_id = null ) {
  * @return string       	output of shortcode
  */
 function ld_course_certificate_shortcode( $atts ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$course_id = @$atts['course_id'];
 
 	if ( empty( $course_id ) ) {
@@ -118,10 +128,19 @@ function learndash_get_course_certificate_link( $course_id, $user_id = null ) {
 		return '';
 	}
 
-	$url = get_permalink( $certificate_id );
-	$url = ( strpos( '?', $url ) === false ) ? $url.'?' : $url.'&';
-	$url = $url.'course_id='.$course_id.'&user_id='.$user_id;
+	//$url = get_permalink( $certificate_id );
+	//$url = ( strpos( '?', $url ) === false ) ? $url.'?' : $url.'&';
+	//$url = $url.'course_id='.$course_id.'&user_id='.$user_id;
 
+	$url = add_query_arg(
+		array(
+			'course_id'	=>	$course_id,
+			"print"	=>	wp_create_nonce( $course_id . $user_id )
+			
+			//'user_id'	=>	$user_id
+		),
+		get_permalink( $certificate_id )
+	);
 	return $url;
 }
 
@@ -192,7 +211,7 @@ function learndash_disable_editor_on_certificate( $return ) {
 	return $return;
 }
 
-add_filter( 'wp_default_editor', 'learndash_disable_editor_on_certificate',1, 1 );
+add_filter( 'wp_default_editor', 'learndash_disable_editor_on_certificate', 1, 1 );
 
 
 
@@ -221,3 +240,137 @@ function learndash_disable_editor_on_certificate_js() {
 }
 
 add_filter( 'admin_footer', 'learndash_disable_editor_on_certificate_js', 99 );
+
+
+add_action('load-post.php', 'learndash_admin_load_certification_post');
+add_action('load-post-new.php', 'learndash_admin_load_certification_post');
+function learndash_admin_load_certification_post( ) {
+	global $post;
+	
+	if ( ( ( $post instanceof WP_Post ) && ( $post->post_type == 'sfwd-certificates' ) ) || ( ( isset( $_GET['post_type'] ) ) && ( $_GET['post_type'] == 'sfwd-certificates' ) ) ) {
+		add_action( 'add_meta_boxes', 	'learndash_certificates_add_meta_box' );
+	}	
+}
+
+function learndash_certificates_add_meta_box( $post ) {
+	add_meta_box(
+		'learndash_certificate_options',
+		__( 'LearnDash Certificate Options', 'learndash' ), 
+		'learndash_certificate_options_metabox',
+		'sfwd-certificates',
+		'advanced',
+		'high'
+	);
+}
+
+function learndash_certificate_options_metabox( $certificate ) {
+
+	$config_lang = 'eng';
+	if ( ! empty( $_GET['lang'] ) ) {
+		$config_lang = substr( esc_html( $_GET['lang'] ), 0, 3 );
+	}
+
+	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/config/lang/' . $config_lang . '.php';
+	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/tcpdf.php';
+
+	$learndash_certificate_options_selected = get_post_meta( $certificate->ID, 'learndash_certificate_options', true);
+	if (!is_array($learndash_certificate_options_selected))
+		$learndash_certificate_options_selected = array($learndash_certificate_options_selected);
+	
+	if ( !isset( $learndash_certificate_options_selected['pdf_page_format'] ) )
+		$learndash_certificate_options_selected['pdf_page_format'] = 'LETTER';
+
+	if ( !isset( $learndash_certificate_options_selected['pdf_page_orientation]'] ) )
+		$learndash_certificate_options_selected['pdf_page_orientation]'] = PDF_PAGE_ORIENTATION;
+	
+	wp_nonce_field( plugin_basename( __FILE__ ), 'learndash_certificates_nonce' );
+
+	$learndash_certificate_options['pdf_page_format'] = array(
+		"LETTER"	=>	__('Letter / USLetter (default)', 'learndash'),
+		"A4"		=>	__('A4', 'learndash')
+	);
+	$learndash_certificate_options['pdf_page_format'] = apply_filters('learndash_certificate_pdf_page_formats', $learndash_certificate_options['pdf_page_format']);
+
+	$learndash_certificate_options['pdf_page_orientation'] = array(
+		"L"		=>	__('Landscape (default)', 'learndash'),
+		"P"		=>	__('Portrait', 'learndash')
+	);
+	$learndash_certificate_options['pdf_page_orientation'] = apply_filters('learndash_certificate_page_pdf_page_orientations', $learndash_certificate_options['pdf_page_orientation']);
+
+	if ( ( is_array( $learndash_certificate_options['pdf_page_format'] ) ) && ( !empty( $learndash_certificate_options['pdf_page_format'] ) ) ) {
+		?>
+		<p><label for="learndash_certificate_options_pdf_page_format"><?php _e('PDF Page Size', 'learndash') ?></label>
+			<select id="learndash_certificate_options_pdf_page_format" name="learndash_certificate_options[pdf_page_format]">
+			<?php
+				foreach( $learndash_certificate_options['pdf_page_format'] as $key => $label ) {
+					?><option <?php selected($key, $learndash_certificate_options_selected['pdf_page_format']) ?> value="<?php echo $key ?>"><?php echo $label ?></option><?php
+				}
+			?>
+			</select>
+		</p>
+		<?php
+	}
+
+	if ( ( is_array( $learndash_certificate_options['pdf_page_orientation'] ) ) && ( !empty( $learndash_certificate_options['pdf_page_orientation'] ) ) ) {
+		?>
+		<p><label for="learndash_certificate_options_pdf_page_orientation"><?php _e('PDF Page Orientation', 'learndash') ?></label>
+			<select id="learndash_certificate_options_pdf_page_orientation" name="learndash_certificate_options[pdf_page_orientation]">
+			<?php
+				foreach( $learndash_certificate_options['pdf_page_orientation'] as $key => $label ) {
+					?><option <?php selected($key, $learndash_certificate_options_selected['pdf_page_orientation']) ?> value="<?php echo $key ?>"><?php echo $label ?></option><?php
+				}
+			?>
+			</select>
+		</p>
+		<?php
+	}
+}
+
+
+function learndash_certificates_save_meta_box( $post_id ) {
+	// verify if this is an auto save routine.
+	// If it is our form has not been submitted, so we dont want to do anything
+	if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+		return;
+	}
+
+	// verify this came from the our screen and with proper authorization,
+	// because save_post can be triggered at other times
+	if ( ! isset( $_POST['learndash_certificates_nonce'] ) || ! wp_verify_nonce( $_POST['learndash_certificates_nonce'], plugin_basename( __FILE__ ) ) ) {
+		return;
+	}
+
+	if ( 'sfwd-certificates' != $_POST['post_type'] ) {
+		return;
+	}
+
+	// Check permissions
+	if ( ! current_user_can( 'edit_post', $post_id ) ) {
+		return;
+	}
+
+	$config_lang = 'eng';
+	if ( ! empty( $_GET['lang'] ) ) {
+		$config_lang = substr( esc_html( $_GET['lang'] ), 0, 3 );
+	}
+
+	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/config/lang/' . $config_lang . '.php';
+	require_once LEARNDASH_LMS_PLUGIN_DIR . '/includes/vendor/tcpdf/tcpdf.php';
+
+	$learndash_certificate_options = array();
+
+	if ( ( isset( $_POST['learndash_certificate_options']['pdf_page_format'] ) ) && (!empty( $_POST['learndash_certificate_options']['pdf_page_format'] ) ) ) {
+		$learndash_certificate_options['pdf_page_format'] = esc_attr( $_POST['learndash_certificate_options']['pdf_page_format'] );
+	} else {
+		$learndash_certificate_options['pdf_page_format'] = 'LETTER';
+	}
+
+	if ( ( isset( $_POST['learndash_certificate_options']['pdf_page_orientation'] ) ) && (!empty( $_POST['learndash_certificate_options']['pdf_page_orientation'] ) ) ) {
+		$learndash_certificate_options['pdf_page_orientation'] = esc_attr( $_POST['learndash_certificate_options']['pdf_page_orientation'] );
+	} else {
+		$learndash_certificate_options['pdf_page_orientation'] = PDF_PAGE_ORIENTATION;
+	}
+	
+	update_post_meta( $post_id, 'learndash_certificate_options', $learndash_certificate_options );
+}
+add_action( 'save_post', 'learndash_certificates_save_meta_box' );

@@ -3,10 +3,11 @@
  * Plugin Name: LearnDash LMS
  * Plugin URI: http://www.learndash.com
  * Description: LearnDash LMS Plugin - Turn your WordPress site into a learning management system.
- * Version: 2.1.1
+ * Version: 2.2.0
  * Author: LearnDash
  * Author URI: http://www.learndash.com
- * 
+ * Text Domain: learndash
+ * Doman Path: /languages/
  * @since 2.1.0
  * 
  * @package LearnDash
@@ -16,7 +17,32 @@
 /**
  * LearnDash Version Constant
  */
-define( 'LEARNDASH_VERSION', '2.1.1' );
+define( 'LEARNDASH_VERSION', '2.2.0' );
+
+if ( !defined('LEARNDASH_LMS_PLUGIN_DIR' ) ) {
+	define( 'LEARNDASH_LMS_PLUGIN_DIR', trailingslashit( plugin_dir_path( __FILE__ ) ) );
+}
+if (!defined( 'LEARNDASH_LMS_PLUGIN_URL' ) ) {
+	define( 'LEARNDASH_LMS_PLUGIN_URL', trailingslashit( plugin_dir_url( __FILE__ ) ) );
+}
+
+// If the WordPress 'SCRIPT_DEBUG' is set then we also set our 'WPPROQUIZ_DEV' so we are serving non-minified scripts
+if ( !defined( 'LEARNDASH_SCRIPT_DEBUG' ) ) {
+	if ( ( defined( 'SCRIPT_DEBUG' ) ) && ( SCRIPT_DEBUG === true ) ) {
+		define('LEARNDASH_SCRIPT_DEBUG', true);
+	} else {
+		define('LEARNDASH_SCRIPT_DEBUG', false);
+	}
+}  
+
+if ( !defined('LEARNDASH_LMS_DEFAULT_QUESTION_POINTS' ) ) {
+	define( 'LEARNDASH_LMS_DEFAULT_QUESTION_POINTS', 1 );
+}
+
+if ( !defined('LEARNDASH_LMS_DEFAULT_ANSWER_POINTS' ) ) {
+	define( 'LEARNDASH_LMS_DEFAULT_ANSWER_POINTS', 0 );
+}
+
 
 /**
  * The module base class; handles settings, options, menus, metaboxes, etc.
@@ -84,6 +110,11 @@ require_once( dirname( __FILE__ ).'/includes/quiz/ld-quiz-info-shortcode.php' );
 require_once( dirname( __FILE__ ).'/includes/quiz/ld-quiz-migration.php' );
 
 /**
+ * Quiz essay question functions
+ */
+require_once( dirname( __FILE__ ).'/includes/quiz/ld-quiz-essays.php' );
+
+/**
  * Load scripts & styles
  */
 require_once( dirname( __FILE__ ).'/includes/ld-scripts.php' );
@@ -123,6 +154,11 @@ require_once( dirname( __FILE__ ).'/includes/ld-misc-functions.php' );
  */
 require_once( dirname( __FILE__ ).'/includes/admin/ld-admin.php' );
 
+/**
+ * Custom label
+ */
+require_once( dirname( __FILE__ ).'/includes/class-ld-custom-label.php' );
+
 
 /**
  * Globals that hold CPT's and Pages to be set up
@@ -137,6 +173,7 @@ $learndash_post_types = array(
 	'sfwd-transactions', 
 	'sfwd-groups', 
 	'sfwd-assignment',
+	'sfwd-essays',
 );
 
 $learndash_pages = array( 
@@ -146,3 +183,11 @@ $learndash_pages = array(
 	'learndash-lms-reports', 
 	'ldAdvQuiz',
 );
+
+// This is a global variable which is set in any of the shortcode handler functions.
+// The purpose is to let the plugin know when and if the any of the shortcodes were used. 
+$learndash_shortcode_used = false;
+
+$learndash_assets_loaded = array();
+$learndash_assets_loaded['styles'] = array();
+$learndash_assets_loaded['scripts'] = array();

@@ -20,6 +20,7 @@
  * @return string   		shortcode output
  */
 function ld_course_list( $attr ) {
+	global $learndash_shortcode_used;
 	
 	$shortcode_atts = shortcode_atts( 
 		array(
@@ -203,6 +204,8 @@ function ld_course_list( $attr ) {
 	$output = learndash_ob_get_clean( $level );
 	wp_reset_query();
 
+	$learndash_shortcode_used = true;
+
 	/**
 	 * Filter HTML output of category dropdown
 	 * 
@@ -226,6 +229,9 @@ add_shortcode( 'ld_course_list', 'ld_course_list' );
  * @return string   		shortcode output
  */
 function ld_lesson_list( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$attr['post_type'] = 'sfwd-lessons';
 	$attr['mycourses'] = false;
 	return ld_course_list( $attr );
@@ -244,6 +250,9 @@ add_shortcode( 'ld_lesson_list', 'ld_lesson_list' );
  * @return string   		shortcode output
  */
 function ld_quiz_list( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$attr['post_type'] = 'sfwd-quiz';
 	$attr['mycourses'] = false;
 	return ld_course_list( $attr );
@@ -262,6 +271,9 @@ add_shortcode( 'ld_quiz_list', 'ld_quiz_list' );
  * @return string   		shortcode output
  */
 function ld_topic_list( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$attr['post_type'] = 'sfwd-topic';
 	$attr['mycourses'] = false;
 	return ld_course_list( $attr );
@@ -301,6 +313,9 @@ function ld_course_check_user_access( $course_id, $user_id = null ) {
  * @return string   			shortcode output
  */
 function learndash_visitor_check_shortcode( $atts, $content = null ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+
 	if ( ! is_singular() || is_null( $content ) ) {
 		return '';
 	}
@@ -330,6 +345,9 @@ add_shortcode( 'visitor', 'learndash_visitor_check_shortcode' );
  * @return string   			shortcode output
  */
 function learndash_student_check_shortcode( $atts, $content = null ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+
 	if ( ! is_singular() || is_null( $content ) ) {
 		return '';
 	}
@@ -388,6 +406,9 @@ function learndash_course_status_content_shortcode( $atts, $content, $status ) {
  * @return string   			shortcode output
  */
 function learndash_course_complete_shortcode( $atts, $content ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	return learndash_course_status_content_shortcode( $atts, $content, 'Completed' );
 }
 
@@ -405,6 +426,9 @@ add_shortcode( 'course_complete', 'learndash_course_complete_shortcode' );
  * @return string   			shortcode output
  */
 function learndash_course_inprogress_shortcode( $atts, $content ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	return learndash_course_status_content_shortcode( $atts, $content, 'In Progress' );
 }
 
@@ -422,6 +446,9 @@ add_shortcode( 'course_inprogress', 'learndash_course_inprogress_shortcode' );
  * @return string   			shortcode output
  */
 function learndash_course_notstarted_shortcode( $atts, $content ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	if ( ! is_singular() ) {
 		return '';
 	}

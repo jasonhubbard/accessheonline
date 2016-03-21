@@ -23,7 +23,7 @@ function learndash_mark_complete( $post ) {
 
 	$current_user = wp_get_current_user();
 	$userid = $current_user->ID;
-
+	
 	if ( isset( $_POST['sfwd_mark_complete'] ) && isset( $_POST['post'] ) && $post->ID == $_POST['post'] ) {
 		return '';
 	}
@@ -93,7 +93,7 @@ function learndash_mark_complete( $post ) {
 	if ( lesson_hasassignments( $post ) ) {
 
 		$ret = '
-				<table>
+				<table id="leardash_upload_assignment">
 					<tr> <u>' . __( 'Upload Assignment', 'learndash' ) . "</u></tr>
 					<tr>
 						<td>
@@ -112,7 +112,7 @@ function learndash_mark_complete( $post ) {
 		$return = "
 				<form id='sfwd-mark-complete' method='post' action=''>
 					<input type='hidden' value='" . $post->ID . "' name='post'/>
-					<input type='submit' value='" . __( 'Mark Complete', 'learndash' ) . "' name='sfwd_mark_complete'/>
+					<input type='submit' value='" . LearnDash_Custom_Label::get_label( 'button_mark_complete' ) . "' name='sfwd_mark_complete'/>
 				</form>
 				";
 	} else {
@@ -129,7 +129,7 @@ function learndash_mark_complete( $post ) {
 
 		$return .= "<form id='sfwd-mark-complete' method='post' action=''>
 						<input type='hidden' value='" . $post->ID . "' name='post'/>
-						<input id='learndash_mark_complete_button' type='submit' value='" . __( 'Mark Complete', 'learndash' ) . "' name='sfwd_mark_complete' DISABLED/>
+						<input id='learndash_mark_complete_button' type='submit' value='" . LearnDash_Custom_Label::get_label( 'button_mark_complete' ) . "' name='sfwd_mark_complete' DISABLED/>
 					</form>
 					<span id='learndash_timer'></span>
 					";
@@ -435,7 +435,7 @@ function learndash_can_attempt_again( $user_id, $quiz_id ) {
 	 */
 	$repeats = apply_filters( 'learndash_allowed_repeats', $repeats, $user_id, $quiz_id );
 
-	if ( empty( $repeats ) ) {
+	if ( $repeats == "" ) {
 		return true;
 	}
 
@@ -918,6 +918,9 @@ function learndash_course_status( $id, $user_id = null ) {
  * @return string      shortcode output
  */
 function learndash_course_progress( $atts ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	extract( shortcode_atts( array( 'course_id' => 0, 'user_id' => 0, 'array' => false, ), $atts ) );
 
 	if ( empty( $user_id ) ) {
@@ -951,7 +954,7 @@ function learndash_course_progress( $atts ) {
 
 		$percentage = intVal( $completed * 100 / $total );
 		$percentage = ( $percentage > 100 ) ? 100 : $percentage;
-		$message = $completed . ' out of ' . $total . ' steps completed';
+		$message = sprintf( __('%d out of %d steps completed', 'learndash' ), $completed, $total );
 	}
 
 	if ( $array ) {
@@ -1138,14 +1141,15 @@ function learndash_next_lesson_quiz( $url = true, $user_id = null, $lesson_id = 
 	}
 
 	$quizzes = learndash_get_lesson_quiz_list( $lesson_id, $user_id );
-
-	foreach ( $quizzes as $quiz ) {
-		if ( $quiz['status'] != 'completed' && ! in_array( $quiz['post']->ID, $exclude ) && learndash_can_attempt_again( $user_id, $quiz['post']->ID ) ) {
-			$return = ( $url ) ? get_permalink( $quiz['post']->ID ) : $quiz['post']->ID;
-			break;
+	if ((!empty($quizzes)) && (is_array($quizzes))) {
+		foreach ( $quizzes as $quiz ) {
+			if ( $quiz['status'] != 'completed' && ! in_array( $quiz['post']->ID, $exclude ) && learndash_can_attempt_again( $user_id, $quiz['post']->ID ) ) {
+				$return = ( $url ) ? get_permalink( $quiz['post']->ID ) : $quiz['post']->ID;
+				break;
+			}
 		}
 	}
-
+	
 	if ( empty( $return ) ) {
 		learndash_process_mark_complete( $user_id, $lesson_id );
 	} else {
@@ -1181,10 +1185,10 @@ class LearnDash_Course_Progress_Widget extends WP_Widget {
 	function __construct() {
 		$widget_ops = array( 
 			'classname' => 'widget_ldcourseprogress',
-			'description' => __( 'LearnDash course progress bar', 'learndash' )
+			'description' => sprintf( __( 'LearnDash %s progress bar', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'course' ) )
 		);
 		$control_ops = array(); //'width' => 400, 'height' => 350);
-		parent::__construct( 'ldcourseprogress', __( 'Course Progress Bar', 'learndash' ), $widget_ops, $control_ops );
+		parent::__construct( 'ldcourseprogress', sprintf( _x( '%s Progress Bar', 'Course Progress Bar Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ), $widget_ops, $control_ops );
 	}
 
 
@@ -1199,6 +1203,8 @@ class LearnDash_Course_Progress_Widget extends WP_Widget {
 	 * @return string          widget output
 	 */
 	function widget( $args, $instance ) {
+		global $learndash_shortcode_used;
+		
 		extract( $args );
 		$title = apply_filters( 'widget_title', empty( $instance['title'] ) ? '' : $instance['title'], $instance );
 
@@ -1220,6 +1226,8 @@ class LearnDash_Course_Progress_Widget extends WP_Widget {
 
 		echo $progressbar;
 		echo $after_widget;
+		
+		$learndash_shortcode_used = true;
 	}
 
 

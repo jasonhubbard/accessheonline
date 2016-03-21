@@ -189,29 +189,33 @@ class WpProQuiz_Model_StatisticRefMapper extends WpProQuiz_Model_Mapper {
 			$refId = $this->_wpdb->insert_id;
 		}
 	
-		foreach($statisticModel as $d) {
-			$answerData = $d->getAnswerData() === null ? 'NULL' : $this->_wpdb->prepare('%s', json_encode($d->getAnswerData()));
+		if ( !empty( $refId ) ) {
+			foreach($statisticModel as $d) {
+				$answerData = $d->getAnswerData() === null ? 'NULL' : $this->_wpdb->prepare('%s', json_encode($d->getAnswerData()));
 			
-			$values[] = '( '.implode(', ', array(
-					'statistic_ref_id' => $refId,
-					'question_id' => $d->getQuestionId(),
-					'correct_count' => $d->getCorrectCount(),
-					'incorrect_count' => $d->getIncorrectCount(),
-					'hint_count' => $d->getHintCount(),
-					'points' => $d->getPoints(),
-					'question_time' => $d->getQuestionTime(),
-					'answer_data' => $answerData
-			)).' )';
-		}
+				$values[] = '( '.implode(', ', array(
+						'statistic_ref_id' => $refId,
+						'question_id' => $d->getQuestionId(),
+						'correct_count' => $d->getCorrectCount(),
+						'incorrect_count' => $d->getIncorrectCount(),
+						'hint_count' => $d->getHintCount(),
+						'points' => $d->getPoints(),
+						'question_time' => $d->getQuestionTime(),
+						'answer_data' => $answerData
+				)).' )';
+			}
 	
-		$this->_wpdb->query(
-				'INSERT INTO
-				'.$this->_tableStatistic.' (
-					statistic_ref_id, question_id, correct_count, incorrect_count, hint_count, points, question_time, answer_data
-				)
-			VALUES
-				'.implode(', ', $values)
-		);
+			$this->_wpdb->query(
+					'INSERT INTO
+					'.$this->_tableStatistic.' (
+						statistic_ref_id, question_id, correct_count, incorrect_count, hint_count, points, question_time, answer_data
+					)
+				VALUES
+					'.implode(', ', $values)
+			);
+		}
+		
+		return $refId;
 	}
 	
 	public function deleteUser($quizId, $userId) {

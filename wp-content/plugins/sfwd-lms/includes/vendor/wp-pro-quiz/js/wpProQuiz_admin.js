@@ -1535,6 +1535,27 @@ jQuery(document).ready(function($) {
 			});
 		};
 		
+		function showSpinner(itemClass) {
+			if (itemClass != '') {
+				$(itemClass).css('float', 'none');
+				$(itemClass).css('visibility', 'visible');
+				$(itemClass).show();
+			}
+		}
+		
+		function hideSpinner(itemClass) {
+			if (itemClass != '') {
+				$(itemClass).hide();
+				$(itemClass).css('visibility', 'hidden');
+			}
+		}
+
+		function showMessage(itemClass) {
+			if (itemClass != '') {
+				$(itemClass).show().fadeOut(1500);
+			}
+		}
+		
 		var module = {
 				/**
 				 * @memberOf WpProQuiz_admin.module
@@ -1547,11 +1568,16 @@ jQuery(document).ready(function($) {
 							categoryId: id
 						};
 						
+						showSpinner('.categorySpinner');
+						
 						global.ajaxPost('categoryDelete', data, function(json) {
 							if(json.err) {
 								
 								return;
 							}
+
+							hideSpinner('.categorySpinner');
+							showMessage('.categoryDeleteUpdate');
 							
 							$('select[name="category"] option[value="'+id+'"]').remove();
 							$('select[name="category"]').change();
@@ -1568,14 +1594,19 @@ jQuery(document).ready(function($) {
 							alert(wpProQuizLocalize.category_no_name);
 							return;
 						}
+						showSpinner('.categorySpinner');
 						
 						global.ajaxPost('categoryEdit', data, function(json) {
 							if(json.err) {
 								
 								return;
 							}
+
+							hideSpinner('.categorySpinner');
+							showMessage('.categoryEditUpdate')
 							
 							$('select[name="category"] option[value="'+id+'"]').text(data.categoryName);
+							$('select[name="category"]').val('');
 							$('select[name="category"]').change();
 						});
 					},
@@ -1591,6 +1622,13 @@ jQuery(document).ready(function($) {
 							type: type
 						};
 						
+						// Show the spinner
+						if(!type) {
+							showSpinner('.templateQuizSpinner');
+						} else {
+							showSpinner('.templateQuestionSpinner');
+						}
+
 						global.ajaxPost('templateDelete', data, function(json) {
 							if(json.err) {
 								
@@ -1598,10 +1636,18 @@ jQuery(document).ready(function($) {
 							}
 							
 							if(!type) {
+								hideSpinner('.templateQuizSpinner');
+								showMessage('.templateQuizDeleteUpdate');
+
 								$('select[name="templateQuiz"] option[value="'+id+'"]').remove();
+								$('select[name="templateQuiz"]').val('');
 								$('select[name="templateQuiz"]').change();
 							} else {
+								hideSpinner('.templateQuestionSpinner');
+								showMessage('.templateQuestionDeleteUpdate');
+
 								$('select[name="templateQuestion"] option[value="'+id+'"]').remove();
+								$('select[name="templateQuestion"]').val('');
 								$('select[name="templateQuestion"]').change();
 							}
 						});
@@ -1620,17 +1666,31 @@ jQuery(document).ready(function($) {
 								type: type
 						};
 						
+						if (!type) {
+							showSpinner('.templateQuizSpinner');
+						} else {
+							showSpinner('.templateQuestionSpinner');
+						}
+						
 						global.ajaxPost('templateEdit', data, function(json) {
 							if(json.err) {
 								
 								return;
 							}
-							
+														
 							if(!type) {
+								hideSpinner('.templateQuizSpinner');
+								showMessage('.templateQuizEditUpdate');
+
 								$('select[name="templateQuiz"] option[value="'+id+'"]').text(data.name);
+								$('select[name="templateQuiz"]').val('');
 								$('select[name="templateQuiz"]').change();
 							} else {
+								hideSpinner('.templateQuestionSpinner');
+								showMessage('.templateQuestionEditUpdate');
+
 								$('select[name="templateQuestion"] option[value="'+id+'"]').text(data.name);
+								$('select[name="templateQuestion"]').val('');
 								$('select[name="templateQuestion"]').change();
 							}
 						});
@@ -1653,22 +1713,94 @@ jQuery(document).ready(function($) {
 //						}
 //					});
 					
+					
+					/*******************************************
+					 * Category 
+					 ******************************************/
 					$('select[name="category"]').change(function() {
-						$('input[name="categoryEditText"]').val($(this).find(':selected').text());
-					}).change();
+						//$('input[name="categoryEditText"]').val($(this).find(':selected').text());
+
+						if ($(this).val() != '') {
+							$('input[name="categoryEditText"]').val($('option:selected', this).text());
+						} else {
+							$('input[name="categoryEditText"]').val('');
+						}
+					});
 					
 					$('input[name="categoryDelete"]').click(function() {
-						var id = $('select[name="category"] option:selected').val();
-						
-						methode.categoryDelete(id);
+						var category_id = $('select[name="category"] option:selected').val();
+						if (category_id != '') {
+							methode.categoryDelete(category_id);
+						}
 					});
 					
 					$('input[name="categoryEdit"]').click(function() {
-						var id = $('select[name="category"] option:selected').val();
-						var text = $('input[name="categoryEditText"]').val();
-						
-						methode.categoryEdit(id, text);
+						var category_id = $('select[name="category"] option:selected').val();
+						if (category_id != '') {
+							var category_text = $('input[name="categoryEditText"]').val();						
+							methode.categoryEdit(category_id, category_text);
+						}
 					});
+					
+					/*******************************************
+					 * templateQuiz 
+					 ******************************************/
+					$('select[name="templateQuiz"]').change(function() {
+						//$('input[name="templateQuizEditText"]').val($(this).find(':selected').text());
+						if ($(this).val() != '') {
+							$('input[name="templateQuizEditText"]').val($('option:selected', this).text());
+						} else {
+							$('input[name="templateQuizEditText"]').val('');
+						}
+					});
+					$('input[name="templateQuizEdit"]').click(function() {
+						var template_id = $('select[name="templateQuiz"] option:selected').val();
+						if (template_id != '') {
+							var text = $('input[name="templateQuizEditText"]').val();
+						
+							methode.templateEdit(template_id, text, 0);
+						}
+					});
+					$('input[name="templateQuizDelete"]').click(function() {
+						var template_id = $('select[name="templateQuiz"] option:selected').val();
+						if (template_id != '') {
+							methode.templateDelete(template_id, 0);
+						}
+					});
+					
+					
+					/*******************************************
+					 * templateQuestion 
+					 ******************************************/
+					$('select[name="templateQuestion"]').change(function() {
+						//$('input[name="templateQuestionEditText"]').val($(this).find(':selected').text());
+						if ($(this).val() != '') {
+							$('input[name="templateQuestionEditText"]').val($('option:selected', this).text());
+						} else {
+							$('input[name="templateQuestionEditText"]').val('');
+						}
+						
+					});
+
+					$('input[name="templateQuestionEdit"]').click(function() {
+						var template_id = $('select[name="templateQuestion"] option:selected').val();
+						if (template_id != '') {
+							var text = $('input[name="templateQuestionEditText"]').val();
+						
+							methode.templateEdit(template_id, text, 1);
+						}
+					});
+					
+					$('input[name="templateQuestionDelete"]').click(function() {
+						var template_id = $('select[name="templateQuestion"] option:selected').val();
+						if (template_id != '') {
+							methode.templateDelete(template_id, 1);
+						}
+					});
+					/*******************************************
+					 * 
+					 ******************************************/
+					
 					
 					$('#statistic_time_format_select').change(function() {
 						methode.changeTimeFormat('statisticTimeFormat', $(this));
@@ -1685,7 +1817,7 @@ jQuery(document).ready(function($) {
 							break;
 						}
 					});
-					
+					/*
 					$('input[name="email[html]"]').change(function() {
 						if(switchEditors == undefined)
 							return false;
@@ -1697,7 +1829,8 @@ jQuery(document).ready(function($) {
 						}
 						
 					}).change();
-					
+					*/
+					/*
 					$('input[name="userEmail[html]"]').change(function() {
 						if(switchEditors == undefined)
 							return false;
@@ -1709,40 +1842,7 @@ jQuery(document).ready(function($) {
 						}
 						
 					}).change();
-					
-					$('select[name="templateQuiz"]').change(function() {
-						$('input[name="templateQuizEditText"]').val($(this).find(':selected').text());
-					}).change();
-					
-					$('select[name="templateQuestion"]').change(function() {
-						$('input[name="templateQuestionEditText"]').val($(this).find(':selected').text());
-					}).change();
-					
-					$('input[name="templateQuizDelete"]').click(function() {
-						var id = $('select[name="templateQuiz"] option:selected').val();
-						
-						methode.templateDelete(id, 0);
-					});
-					
-					$('input[name="templateQuestionDelete"]').click(function() {
-						var id = $('select[name="templateQuestion"] option:selected').val();
-						
-						methode.templateDelete(id, 1);
-					});
-					
-					$('input[name="templateQuizEdit"]').click(function() {
-						var id = $('select[name="templateQuiz"] option:selected').val();
-						var text = $('input[name="templateQuizEditText"]').val();
-						
-						methode.templateEdit(id, text, 0);
-					});
-					
-					$('input[name="templateQuestionEdit"]').click(function() {
-						var id = $('select[name="templateQuestion"] option:selected').val();
-						var text = $('input[name="templateQuestionEditText"]').val();
-						
-						methode.templateEdit(id, text, 1);
-					});
+					*/					
 				};
 				
 				init();
@@ -1803,8 +1903,9 @@ jQuery(document).ready(function($) {
 							}
 						}
 						
-						if(filter() === false)
-							return false;
+						// Causing error. Not sure where filter() function is defined. NEed to check merges to see if something was dropped. For now commentted out.
+						//if(filter() === false)
+						//	return false;
 						
 						return true;
 					},
@@ -2066,6 +2167,16 @@ jQuery(document).ready(function($) {
 								 	.insertBefore(this);
 							}).remove();
 						}
+
+						if ( v == 'essay' ) {
+							$('#wpProQuiz_answerPointsActivated').hide();
+							$('#wpProQuiz_correctMessageBox').hide();
+							$('#wpProQuiz_incorrectMassageBox').hide();
+						} else {
+							$('#wpProQuiz_answerPointsActivated').show();
+							$('#wpProQuiz_correctMessageBox').show();
+							$('#wpProQuiz_incorrectMassageBox').show();
+						}
 						
 						filter = (validate[v] != undefined) ? validate[v] : $.noop();
 						
@@ -2077,12 +2188,15 @@ jQuery(document).ready(function($) {
 					$('.deleteAnswer').click(methode.answerRemove);
 					
 					$('.addAnswer').click(function() {
+						var default_value = $(this).attr('data-default-value');
+						if (default_value == undefined) default_value = 0;
+						
 						var ul = $(this).siblings('ul');
 						var clone = ul.find('li:eq(0)').clone();
 						
 						clone.find('.wpProQuiz_checkbox').removeAttr('checked');
 						clone.find('.wpProQuiz_text').val('');
-						clone.find('.wpProQuiz_points').val(1);
+						clone.find('.wpProQuiz_points').val(default_value);
 						clone.find('.deleteAnswer').click(methode.answerRemove);
 						clone.find('.addMedia').click(methode.addMediaClick);
 						
@@ -2869,39 +2983,49 @@ jQuery(document).ready(function($) {
 						}
 					});
 					
-					$('#datepickerFrom').datepicker({
-					    closeText: wpProQuizLocalize.closeText,
-					    currentText: wpProQuizLocalize.currentText,
-					    monthNames: wpProQuizLocalize.monthNames,
-					    monthNamesShort: wpProQuizLocalize.monthNamesShort,
-					    dayNames: wpProQuizLocalize.dayNames,
-					    dayNamesShort: wpProQuizLocalize.dayNamesShort,
-					    dayNamesMin: wpProQuizLocalize.dayNamesMin,
-					    dateFormat: wpProQuizLocalize.dateFormat,
-					    firstDay: wpProQuizLocalize.firstDay,
-					    
-						changeMonth: true,
-						onClose: function(selectedDate) {
-							$('#datepickerTo').datepicker('option', 'minDate', selectedDate);
-						}
-					});
+					if (($('#datepickerFrom').length) || ($('#datepickerTo').length)) {
 					
-					$('#datepickerTo').datepicker({
-					    closeText: wpProQuizLocalize.closeText,
-					    currentText: wpProQuizLocalize.currentText,
-					    monthNames: wpProQuizLocalize.monthNames,
-					    monthNamesShort: wpProQuizLocalize.monthNamesShort,
-					    dayNames: wpProQuizLocalize.dayNames,
-					    dayNamesShort: wpProQuizLocalize.dayNamesShort,
-					    dayNamesMin: wpProQuizLocalize.dayNamesMin,
-					    dateFormat: wpProQuizLocalize.dateFormat,
-					    firstDay: wpProQuizLocalize.firstDay,
+						// Wait until the #ui-datepicker-div element is added to the DOM
+						$(document).on('DOMNodeInserted', function(e) {
+							if (e.target.id == 'ui-datepicker-div') {
+								$('#ui-datepicker-div').addClass('learndash-datepicker');
+							}
+						});
+										
+						$('#datepickerFrom').datepicker({
+						    closeText: wpProQuizLocalize.closeText,
+						    currentText: wpProQuizLocalize.currentText,
+						    monthNames: wpProQuizLocalize.monthNames,
+						    monthNamesShort: wpProQuizLocalize.monthNamesShort,
+						    dayNames: wpProQuizLocalize.dayNames,
+						    dayNamesShort: wpProQuizLocalize.dayNamesShort,
+						    dayNamesMin: wpProQuizLocalize.dayNamesMin,
+						    dateFormat: wpProQuizLocalize.dateFormat,
+						    firstDay: wpProQuizLocalize.firstDay,
 					    
-						changeMonth: true,
-						onClose: function(selectedDate) {
-							$('#datepickerFrom').datepicker('option', 'maxDate', selectedDate);
-						}
-					});
+							changeMonth: true,
+							onClose: function(selectedDate) {
+								$('#datepickerTo').datepicker('option', 'minDate', selectedDate);
+							}
+						});
+					
+						$('#datepickerTo').datepicker({
+						    closeText: wpProQuizLocalize.closeText,
+						    currentText: wpProQuizLocalize.currentText,
+						    monthNames: wpProQuizLocalize.monthNames,
+						    monthNamesShort: wpProQuizLocalize.monthNamesShort,
+						    dayNames: wpProQuizLocalize.dayNames,
+						    dayNamesShort: wpProQuizLocalize.dayNamesShort,
+						    dayNamesMin: wpProQuizLocalize.dayNamesMin,
+						    dateFormat: wpProQuizLocalize.dateFormat,
+						    firstDay: wpProQuizLocalize.firstDay,
+					    
+							changeMonth: true,
+							onClose: function(selectedDate) {
+								$('#datepickerFrom').datepicker('option', 'maxDate', selectedDate);
+							}
+						});
+					}
 					
 					$('#filter').click(function() {
 						historyFilter.changeFilter();

@@ -15,14 +15,17 @@ class WpProQuiz_Controller_Front {
 	}
 
 	public function loadDefaultScripts() {
+		global $learndash_assets_loaded;
+		
 		wp_enqueue_script('jquery');
 
 		wp_enqueue_style(
 			'wpProQuiz_front_style',
-			plugins_url('css/wpProQuiz_front'.(WPPROQUIZ_DEV ? '' : '.min').'.css', WPPROQUIZ_FILE),
+			plugins_url('css/wpProQuiz_front' . ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min') .'.css', WPPROQUIZ_FILE),
 			array(),
 			WPPROQUIZ_VERSION
 		);
+		$learndash_assets_loaded['styles']['wpProQuiz_front_style'] = __FUNCTION__;
 
 		if($this->_settings->isJsLoadInHead()) {
 			$this->loadJsScripts(false, true, true);
@@ -30,14 +33,17 @@ class WpProQuiz_Controller_Front {
 	}
 
 	private function loadJsScripts($footer = true, $quiz = true, $toplist = false) {
-		if($quiz) {
+		global $learndash_assets_loaded;
+
+		if ($quiz) {
 			wp_enqueue_script(
 				'wpProQuiz_front_javascript',
-				plugins_url('js/wpProQuiz_front'.(WPPROQUIZ_DEV ? '' : '.min').'.js', WPPROQUIZ_FILE),
+				plugins_url('js/wpProQuiz_front' . ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min' ) .'.js', WPPROQUIZ_FILE),
 				array('jquery', 'jquery-ui-sortable'),
 				WPPROQUIZ_VERSION,
 				$footer
 			);
+			$learndash_assets_loaded['scripts']['wpProQuiz_front_javascript'] = __FUNCTION__;
 
 			wp_localize_script('wpProQuiz_front_javascript', 'WpProQuizGlobal', array(
 				'ajaxurl' => str_replace(array("http:", "https:"), array("",""), admin_url('admin-ajax.php')),
@@ -46,32 +52,39 @@ class WpProQuiz_Controller_Front {
 				'questionsNotSolved' => __('You must answer all questions before you can completed the quiz.', 'wp-pro-quiz'),
 				'fieldsNotFilled' => __('All fields have to be filled.', 'wp-pro-quiz')
 			));
+			
 			wp_enqueue_script(
-			'jquery-cookie',
-			plugins_url('js/jquery.cookie.js', WPPROQUIZ_FILE),
-			array('jquery', 'jquery-ui-sortable'),
-			'1.4.0',
-			$footer
+				'jquery-cookie',
+				plugins_url('js/jquery.cookie' . ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min' ) .'.js', WPPROQUIZ_FILE),
+				array('jquery', 'jquery-ui-sortable'),
+				'1.4.0',
+				$footer
 			);
+			$learndash_assets_loaded['scripts']['jquery-cookie'] = __FUNCTION__;
 		}
 
-		if($toplist) {
+		if ($toplist) {
 			wp_enqueue_script(
 				'wpProQuiz_front_javascript_toplist',
-				plugins_url('js/wpProQuiz_toplist'.(WPPROQUIZ_DEV ? '' : '.min').'.js', WPPROQUIZ_FILE),
+				plugins_url('js/wpProQuiz_toplist'. ( ( defined( 'WPPROQUIZ_DEV' ) && WPPROQUIZ_DEV ) ? '' : '.min') .'.js', WPPROQUIZ_FILE),
 				array('jquery', 'jquery-ui-sortable'),
 				WPPROQUIZ_VERSION,
 				$footer
 			);
+			$learndash_assets_loaded['scripts']['wpProQuiz_front_javascript_toplist'] = __FUNCTION__;
 
-			if(!wp_script_is('wpProQuiz_front_javascript'))
-				wp_localize_script('wpProQuiz_front_javascript_toplist', 'WpProQuizGlobal', array(
-					'ajaxurl' => str_replace(array("http:", "https:"), array("",""), admin_url('admin-ajax.php')),
-					'loadData' => __('Loading', 'wp-pro-quiz'),
-					'questionNotSolved' => __('You must answer this question.', 'wp-pro-quiz'),
-					'questionsNotSolved' => __('You must answer all questions before you can completed the quiz.', 'wp-pro-quiz'),
-					'fieldsNotFilled' => __('All fields have to be filled.', 'wp-pro-quiz')
-				));
+			if (!wp_script_is('wpProQuiz_front_javascript') ) {
+				wp_localize_script(
+					'wpProQuiz_front_javascript_toplist', 
+					'WpProQuizGlobal', array(
+						'ajaxurl' => str_replace(array("http:", "https:"), array("",""), admin_url('admin-ajax.php')),
+						'loadData' => __('Loading', 'wp-pro-quiz'),
+						'questionNotSolved' => __('You must answer this question.', 'wp-pro-quiz'),
+						'questionsNotSolved' => __('You must answer all questions before you can completed the quiz.', 'wp-pro-quiz'),
+						'fieldsNotFilled' => __('All fields have to be filled.', 'wp-pro-quiz')
+					)
+				);
+			}
 		}
 
 		if(!$this->_settings->isTouchLibraryDeactivate()) {
@@ -82,10 +95,15 @@ class WpProQuiz_Controller_Front {
 				'0.2.2',
 				$footer
 			);
+			$learndash_assets_loaded['scripts']['jquery-ui-touch-punch'] = __FUNCTION__;
 		}
 	}
 
 	public function shortcode($attr) {
+		
+		global $learndash_shortcode_used;
+		$learndash_shortcode_used = true;
+		
 		$id = $attr[0];
 		$content = '';
 
@@ -157,6 +175,10 @@ class WpProQuiz_Controller_Front {
 	}
 
 	public function shortcodeToplist($attr) {
+		
+		global $learndash_shortcode_used;
+		$learndash_shortcode_used = true;
+		
 		$id = $attr[0];
 		$content = '';
 

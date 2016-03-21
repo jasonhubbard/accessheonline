@@ -42,7 +42,7 @@
 <?php if ( ! empty( $topics ) ) : ?>
 	<div id='learndash_topic_dots-<?php echo esc_attr( $lesson_id ); ?>' class="learndash_topic_dots type-dots">
 
-		<b><?php _e( 'Topic Progress:', 'learndash' ); ?></b>
+		<b><?php printf( _x( '%s Progress:', 'Topic Progress Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ); ?></b>
 
 		<?php foreach ( $topics as $key => $topic ) : ?>
 			<?php $completed_class = empty( $topic->completed ) ? 'topic-notcompleted' : 'topic-completed'; ?>
@@ -54,7 +54,7 @@
 	</div>
 <?php endif; ?>
 
-<div id="learndash_back_to_lesson"><a href='<?php echo esc_attr( get_permalink( $lesson_id) ); ?>'>&lsaquo; <?php _e( 'Back to Lesson', 'learndash' ); ?></a></div>
+<div id="learndash_back_to_lesson"><a href='<?php echo esc_attr( get_permalink( $lesson_id) ); ?>'>&larr; <?php printf( _x( 'Back to %s', 'Back to Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ); ?></a></div>
 
 <?php if ( $lesson_progression_enabled && ! $previous_topic_completed ) : ?>
 
@@ -74,7 +74,7 @@
 
 	<?php if ( ! empty( $quizzes ) ) : ?>
 		<div id="learndash_quizzes">
-			<div id="quiz_heading"><span><?php _e( 'Quizzes', 'learndash' ) ?></span><span class="right"><?php _e( 'Status', 'learndash' ) ?></span></div>
+			<div id="quiz_heading"><span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></span><span class="right"><?php _e( 'Status', 'learndash' ) ?></span></div>
 
 			<div id="quiz_list">
 			<?php foreach( $quizzes as $quiz ) : ?>

@@ -91,12 +91,15 @@ function learndash_create_quiz_for_all_adv_quiz() {
 
 	foreach ( $quizzes as $key => $quiz ) {
 		$quizId = $quiz->getId();
+		//error_log('quizId['. $quizId .']');
 
 		if ( empty( $quizId ) ) {
 			continue;
 		}
 
 		$post_id = learndash_get_quiz_id_by_pro_quiz_id( $quizId );
+		//error_log('post_id['. $post_id .']');
+		//die();
 
 		if ( empty( $post_id ) ) {
 			$post_id = learndash_create_quiz_for_adv_quiz( $quizId );

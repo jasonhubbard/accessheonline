@@ -12,7 +12,10 @@ Domain Path: /languages
 
 define('WPPROQUIZ_VERSION', '0.28');
 
-define('WPPROQUIZ_DEV', false);
+// If the WordPress 'SCRIPT_DEBUG' is set then we also set our 'WPPROQUIZ_DEV' so we are serving non-minified scripts
+if ( ( defined( 'SCRIPT_DEBUG' ) ) && ( SCRIPT_DEBUG === true ) && ( !defined( 'WPPROQUIZ_DEV' ) ) ) {
+	define('WPPROQUIZ_DEV', true);
+}
 
 define('WPPROQUIZ_PATH', dirname(__FILE__));
 define('WPPROQUIZ_URL', plugins_url('', __FILE__));
@@ -26,6 +29,19 @@ define('WPPROQUIZ_CAPTCHA_DIR', $uploadDir['basedir'].'/wp_pro_quiz_captcha');
 define('WPPROQUIZ_CAPTCHA_URL', $uploadDir['baseurl'].'/wp_pro_quiz_captcha');
 
 spl_autoload_register('wpProQuiz_autoload');
+
+$WpProQuiz_Answer_types_labels = array(
+	'single' 				=> 	__('Single choice', 'wp-pro-quiz'),
+	'multiple' 				=>	__('Multiple choice', 'wp-pro-quiz'),
+	'free_answer'			=>	__('"Free" choice', 'wp-pro-quiz'),
+	'sort_answer'			=>	__('"Sorting" choice', 'wp-pro-quiz'),
+	'matrix_sort_answer' 	=>	__('"Matrix Sorting" choice', 'wp-pro-quiz'),
+	'cloze_answer'			=>	__('Fill in the blank', 'wp-pro-quiz'),
+	'assessment_answer' 	=>	__('Assessment', 'wp-pro-quiz'),
+	'essay'					=>	__('Essay / Open Answer', 'wp-pro-quiz')
+);
+
+
 
 register_activation_hook(__FILE__, array('WpProQuiz_Helper_Upgrade', 'upgrade'));
 
@@ -71,7 +87,11 @@ function wpProQuiz_autoload($class) {
 
 function wpProQuiz_pluginLoaded() {
 	
-	load_plugin_textdomain('wp-pro-quiz', false, WPPROQUIZ_PPATH.'/languages');
+	if ((defined('LD_LANG_DIR')) && (LD_LANG_DIR)) {
+		load_plugin_textdomain( 'wp-pro-quiz', false, LD_LANG_DIR );
+	} else {
+		load_plugin_textdomain('wp-pro-quiz', false, WPPROQUIZ_PPATH.'/languages');
+	}
 	
 	if(get_option('wpProQuiz_version') !== WPPROQUIZ_VERSION) {
 		WpProQuiz_Helper_Upgrade::upgrade();

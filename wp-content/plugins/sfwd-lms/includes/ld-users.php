@@ -24,7 +24,7 @@ function learndash_show_enrolled_courses( $user ) {
 	?>
 		<table class='form-table'>
 			<tr>
-				<th> <h3><?php _e( 'Enrolled Courses', 'learndash' ); ?></h3></th>
+				<th> <h3><?php printf( _x( 'Enrolled %s', 'Enrolled Courses Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ); ?></h3></th>
 				<td>
 					<ol>
 					<?php
@@ -51,10 +51,10 @@ function learndash_show_enrolled_courses( $user ) {
 
 			<?php if ( current_user_can( 'enroll_users' ) ) : ?>
 					<tr>
-						<th> <h3><?php _e('Enroll a Course', 'learndash' ); ?></h3></th>
+						<th> <h3><?php printf( _x( 'Enroll a %s', 'Enroll a Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h3></th>
 						<td>
 							<select name='enroll_course'>
-								<option value=''><?php _e('-- Select a Course --', 'learndash' ); ?></option>
+								<option value=''><?php printf( _x('-- Select a %s --', 'Select a Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></option>
 									<?php foreach ( $notenrolled as $course ) : ?>
 										<option value="<?php echo $course->ID; ?>"><?php echo $course->post_title; ?></option>
 									<?php endforeach; ?>
@@ -62,10 +62,10 @@ function learndash_show_enrolled_courses( $user ) {
 						</td>
 					</tr>
 					<tr>
-						<th> <h3><?php _e('Unenroll a Course', 'learndash' ); ?></h3></th>
+						<th> <h3><?php printf( _x( 'Unenroll a %s', 'Unenroll a Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h3></th>
 						<td>
 								<select name='unenroll_course'>
-									<option value=''><?php _e('-- Select a Course --', 'learndash' ); ?></option>
+									<option value=''><?php printf( _x( '-- Select a %s --', 'Select a Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></option>
 									<?php foreach ( $enrolled as $course ) : ?>
 										<option value="<?php echo $course->ID; ?>"><?php echo $course->post_title; ?></option>
 									<?php endforeach; ?>
@@ -127,8 +127,8 @@ function learndash_delete_user_data_link( $user ) {
 
 	?>
 		<div id="learndash_delete_user_data">
-			<h2><?php _e( 'Permanently Delete Course Data', 'learndash' ); ?></h2>
-			<input type="checkbox" name="learndash_delete_user_data" value="<?php echo $user->ID; ?>"> <?php _e( 'Check and click update profile to permanently delete user\'s LearnDash course data. <strong>This cannot be undone.</strong>', 'learndash' ); ?><br><br>
+			<h2><?php printf( _x( 'Permanently Delete %s Data', 'Permanently Delete Course Data Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h2>
+			<p><input type="checkbox" id="learndash_delete_user_data" name="learndash_delete_user_data" value="<?php echo $user->ID; ?>"> <label for="learndash_delete_user_data"><?php _e( 'Check and click update profile to permanently delete user\'s LearnDash course data. <strong>This cannot be undone.</strong>', 'learndash' ); ?></label></p>
 		</div>
 	<?php
 }
@@ -165,8 +165,47 @@ function learndash_delete_user_data( $user_id ) {
 		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => '_sfwd-quizzes', 'user_id' => $user->ID ) );
 		$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => '_sfwd-course_progress', 'user_id' => $user->ID ) );
 		$wpdb->query( 'DELETE FROM '.$wpdb->usermeta." WHERE meta_key LIKE 'completed_%' AND user_id = '".$user->ID."'" );
+		$wpdb->query( 'DELETE FROM '.$wpdb->usermeta." WHERE meta_key LIKE 'course_%_access_from' AND user_id = '".$user->ID."'" );
+		$wpdb->query( 'DELETE FROM '.$wpdb->usermeta." WHERE meta_key LIKE 'course_completed_%' AND user_id = '".$user->ID."'" );
 		$wpdb->delete( $wpdb->prefix.'wp_pro_quiz_lock', array( 'user_id' => $user->ID ) );
 		$wpdb->delete( $wpdb->prefix.'wp_pro_quiz_toplist', array( 'user_id' => $user->ID ) );
+
+		// Move user uploaded Assignements to Trash.
+		$user_assignements_query_args = array(
+			'post_type'		=>	'sfwd-assignment',
+			'post_status'	=>	'publish',
+			'nopaging'		=>	true,
+			'author' 		=> 	$user->ID
+		);
+		
+		$user_assignements_query = new WP_Query( $user_assignements_query_args );
+		//error_log('user_assignements_query<pre>'. print_r($user_assignements_query, true) .'</pre>');
+		if ( $user_assignements_query->have_posts() ) {
+			
+			foreach( $user_assignements_query->posts as $assignment_post ) {
+				wp_trash_post( $assignment_post->ID );
+			}
+		}
+		wp_reset_postdata();
+
+
+		// Move user uploaded Essay to Trash.
+		$user_essays_query_args = array(
+			'post_type'		=>	'sfwd-essays',
+			'post_status'	=>	'any',
+			'nopaging'		=>	true,
+			'author' 		=> 	$user->ID
+		);
+		
+		$user_essays_query = new WP_Query( $user_essays_query_args );
+		//error_log('user_essays_query<pre>'. print_r($user_essays_query, true) .'</pre>');
+		if ( $user_essays_query->have_posts() ) {
+			
+			foreach( $user_essays_query->posts as $essay_post ) {
+				wp_trash_post( $essay_post->ID );
+			}
+		}
+		wp_reset_postdata();
 	}	
 }
 

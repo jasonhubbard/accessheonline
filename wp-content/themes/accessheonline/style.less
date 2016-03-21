@@ -502,7 +502,7 @@ blockquote.module-article{
 /* Quiz */
 
 #learndash_quizzes{
-	display: none !important; /* will need displaying again to view quiz url */
+	display: block !important; /* will need displaying again to view quiz url */
 }
 
 .wpProQuiz_questionList {
@@ -555,6 +555,22 @@ blockquote.module-article{
 	background: #fff !important;
 	box-shadow: none !important;
 	padding: 15px 25px !important;
+}
+
+textarea.wpProQuiz_questionEssay{
+	width: 100%;
+	height: 200px;
+}
+
+.wpProQuiz_questionList .graded-disclaimer{
+	font-size: 1.2rem;
+}
+
+.wpProQuiz_results{
+	.quiz_continue_link{
+		float: right;
+		margin: 0 10px 0 0 !important;
+	}
 }
 
 /* Profile */

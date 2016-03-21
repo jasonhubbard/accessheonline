@@ -233,6 +233,11 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 				$course_status = learndash_course_status( $course_id, null );
 				$course_certficate_link = learndash_get_course_certificate_link( $course_id, $user_id );
 				$has_access = sfwd_lms_has_access( $course_id, $user_id );
+				
+				$course_meta = get_post_meta( $course_id, '_sfwd-courses', true );
+				if ( !isset( $course_meta['sfwd-courses_course_disable_content_table'] ) ) {
+					$course_meta['sfwd-courses_course_disable_content_table'] = false;
+				}
 			}
 
 			if ( ! empty( $wp->query_vars['name'] ) ) {
@@ -422,7 +427,16 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 				}
 			}
 
-			$content = str_replace( array( "\n", "\r" ), ' ', $content );
+			// Added this defined wrap in v2.1.8 as it was effecting <pre></pre>, <code></code> and other formatting of the content. 
+			// See wrike https://www.wrike.com/open.htm?id=77352698 as to why this define exists
+			if ( ( defined( 'LEARNDASH_NEW_LINE_AND_CR_TO_SPACE' ) ) && ( LEARNDASH_NEW_LINE_AND_CR_TO_SPACE == true ) ) {
+
+				// Why is this here? 
+				$content = str_replace( array( "\n", "\r" ), ' ', $content );
+
+
+			}
+			
 			$user_has_access = $has_access? 'user_has_access':'user_has_no_access';
 
 			 /**
@@ -484,20 +498,31 @@ if ( ! class_exists( 'SFWD_CPT_Instance' ) ) {
 			}
 
 			if ( $post_type == 'sfwd-certificates' ) {
-				if ( ! empty( $_GET['course_id'] ) && ! empty( $_GET['user_id'] ) && sfwd_lms_has_access( $_GET['course_id'], $_GET['user_id'] ) ) {
-					if ( current_user_can( 'manage_options' ) || get_current_user_id() == $_GET['user_id'] ) {
-						$course_status = learndash_course_status( $_GET['course_id'], $_GET['user_id'] );
-						if ( $course_status == __( 'Completed', 'learndash' ) ) {
+				// if ( ! empty( $_GET['course_id'] ) && ! empty( $_GET['user_id'] ) && sfwd_lms_has_access( $_GET['course_id'], $_GET['user_id'] ) ) {
+					//if ( ( ! empty( $_GET ) ) && ( ! empty( $_GET['print'] ) && ( wp_verify_nonce( $_GET['print'], $id . $user_id ) ) ) ) {
+				if ( is_user_logged_in() ) {
+					$user_id = get_current_user_id();
+
+					if ( ( isset( $_GET['course_id'] ) ) && ( !empty( $_GET['course_id'] ) ) ) {
+						$course_id = intval( $_GET['course_id'] );
+					
+						if ( ( isset( $_GET['print'] ) ) && ( !empty( $_GET['print'] ) ) ) {
+							if ( wp_verify_nonce( esc_attr($_GET['print']), $course_id . $user_id ) )  {
+					
+								$course_status = learndash_course_status( $_GET['course_id'], $_GET['user_id'] );
+								// Bug: Why are we comparing a string value for Complete. 
+								if ( $course_status == __( 'Completed', 'learndash' ) ) {
 							
-							/**
-							 * Include library to generate PDF
-							 */
-							require_once( 'ld-convert-post-pdf.php' );							
-							post2pdf_conv_post_to_pdf();
-							die();
+									/**
+									 * Include library to generate PDF
+									 */
+									require_once( 'ld-convert-post-pdf.php' );							
+									post2pdf_conv_post_to_pdf();
+									die();
+								}
+							}
 						}
 					}
-					die();
 				}
 			}
 

@@ -363,3 +363,22 @@
 */
 
 #learndash_group_users_search {display: none;}
+
+
+table.learndash-group-users-select {
+	width: 100%;
+}
+
+table.learndash-group-users-select td.td_learndash_group_users_search {
+	width: 45%;
+}
+
+table.learndash-group-users-select td.td_learndash_group_users_search select {
+	min-width: 100%;
+	height: 150px;
+}
+/* Hide the 'Add New' button on the Assignment and Submitted Essays list tables */
+body.post-type-sfwd-assignment a.page-title-action,
+body.post-type-sfwd-essays a.page-title-action {
+	display:none;
+}

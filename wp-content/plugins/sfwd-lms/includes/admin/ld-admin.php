@@ -53,17 +53,47 @@ add_filter( 'admin_footer', 'learndash_hide_menu_when_not_required', 99 );
 function learndash_load_admin_resources() {
 	global $pagenow, $post;
 	global $learndash_post_types, $learndash_pages;;
+	global $learndash_assets_loaded;
 
 	if ( in_array( @$_GET['page'], $learndash_pages ) || in_array( @$_GET['post_type'], $learndash_post_types ) || $pagenow == 'post.php' && in_array( $post->post_type, $learndash_post_types ) ) {
-		wp_enqueue_style( 'learndash_style', plugins_url( 'assets/css/style.css', dirname( dirname( __FILE__ ) ) ) );
+		wp_enqueue_style( 
+			'learndash_style', 
+			LEARNDASH_LMS_PLUGIN_URL . 'assets/css/style'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.css',
+			array(), 
+			LEARNDASH_VERSION 
+		);
+		$learndash_assets_loaded['styles']['learndash_style'] = __FUNCTION__;
 	}
 
 	if ( $pagenow == 'post.php' && $post->post_type == 'sfwd-quiz' || $pagenow == 'post-new.php' && @$_GET['post_type'] == 'sfwd-quiz' ) {
-		wp_enqueue_script( 'ld-proquiz_admin_js', plugins_url( 'vendor/wp-pro-quiz/js/wpProQuiz_admin.min.js', dirname( __FILE__ ) ), array( 'jquery' ) );
+		wp_enqueue_script( 
+			'wpProQuiz_admin_javascript', 
+			plugins_url('js/wpProQuiz_admin'. ( ( defined( 'WPPROQUIZ_DEV' ) && ( WPPROQUIZ_DEV === true ) ) ? '' : '.min') .'.js', WPPROQUIZ_FILE),
+			array( 'jquery' ),
+			LEARNDASH_VERSION,
+			true
+		);
+		$learndash_assets_loaded['scripts']['wpProQuiz_admin_javascript'] = __FUNCTION__;
 	}
 
 	if ( $pagenow == 'post-new.php' && @$_GET['post_type'] == 'sfwd-lessons' || $pagenow == 'post.php' && @get_post( @$_GET['post'] )->post_type == 'sfwd-lessons' ) {
-		wp_enqueue_style( 'ld-datepicker-css', plugins_url( 'assets/css/jquery-ui.css', dirname( dirname( __FILE__ ) ) ) );
+		wp_enqueue_style( 
+			'ld-datepicker-ui-css', 
+			LEARNDASH_LMS_PLUGIN_URL . 'assets/css/jquery-ui'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.css',
+			array(), 
+			LEARNDASH_VERSION 
+		);
+		$learndash_assets_loaded['styles']['ld-datepicker-ui-css'] = __FUNCTION__;
+	}
+	
+	if ( ($pagenow == 'admin.php') && (@$_GET['page'] == 'ldAdvQuiz') && (@$_GET['module'] == 'statistics') )  {
+		wp_enqueue_style( 
+			'ld-datepicker-ui-css', 
+			LEARNDASH_LMS_PLUGIN_URL . 'assets/css/jquery-ui'. ( ( defined( 'LEARNDASH_SCRIPT_DEBUG' ) && ( LEARNDASH_SCRIPT_DEBUG === true ) ) ? '' : '.min') .'.css',
+			array(), 
+			LEARNDASH_VERSION 
+		);
+		$learndash_assets_loaded['styles']['ld-datepicker-ui-css'] = __FUNCTION__;
 	}
 }
 
@@ -111,8 +141,8 @@ function learndash_menu() {
 
 	add_submenu_page(
 		'learndash-lms-non-existant',
-		__( 'Course Shortcodes', 'learndash' ),
-		__( 'Course Shortcodes', 'learndash' ),
+		sprintf( _x( '%s Shortcodes', 'Course Shortcodes Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
+		sprintf( _x( '%s Shortcodes', 'Course Shortcodes Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 		'edit_courses',
 		'learndash-lms-course_shortcodes',
 		'learndash_course_shortcodes_page'
@@ -137,22 +167,22 @@ function learndash_menu() {
 
 	$add_submenu = array(
 		array(
-			'name' 	=> __( 'Courses', 'learndash' ),
+			'name' 	=> LearnDash_Custom_Label::get_label( 'courses' ),
 			'cap'	=> 'edit_courses',
 			'link'	=> 'edit.php?post_type=sfwd-courses',
 		),
 		array(
-			'name' 	=> __( 'Lessons', 'learndash' ),
+			'name' 	=> LearnDash_Custom_Label::get_label( 'lessons' ),
 			'cap'	=> 'edit_courses',
 			'link'	=> 'edit.php?post_type=sfwd-lessons',
 		),
 		array(
-			'name' 	=> __( 'Topics', 'learndash' ),
+			'name' 	=> LearnDash_Custom_Label::get_label( 'topics' ),
 			'cap'	=> 'edit_courses',
 			'link'	=> 'edit.php?post_type=sfwd-topic',
 		),
 		array(
-			'name' 	=> __( 'Quizzes', 'learndash' ),
+			'name' 	=> LearnDash_Custom_Label::get_label( 'quizzes' ),
 			'cap'	=> 'edit_courses',
 			'link'	=> 'edit.php?post_type=sfwd-quiz',
 		),
@@ -185,6 +215,11 @@ function learndash_menu() {
 			'name' 	=> __( 'Group Administration','learndash' ),
 			'cap'	=> 'group_leader',
 			'link'	=> 'admin.php?page=group_admin_page',
+		),
+		array(
+			'name' 	=> __( 'Submitted Essays','learndash' ),
+			'cap'	=> 'group_leader',
+			'link'	=> 'edit.php?post_type=sfwd-essays',
 		),
 	);
 
@@ -245,7 +280,7 @@ function learndash_admin_tabs() {
 		),
 		10 => array(
 			'link'	=> 'edit.php?post_type=sfwd-courses',
-			'name'	=> __( 'Courses', 'learndash' ),
+			'name'	=> LearnDash_Custom_Label::get_label( 'courses' ),
 			'id'	=> 'edit-sfwd-courses',
 			'menu_link'	=> 'edit.php?post_type=sfwd-courses',
 		),
@@ -263,7 +298,7 @@ function learndash_admin_tabs() {
 		),
 		28 => array(
 			'link'	=> 'admin.php?page=learndash-lms-course_shortcodes',
-			'name'	=> __( 'Course Shortcodes', 'learndash' ),
+			'name'	=> sprintf( _x( '%s Shortcodes', 'Course Shortcodes Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 			'id'	=> 'admin_page_learndash-lms-course_shortcodes',
 			'cap'	=> 'edit_courses',
 			'menu_link'	=> 'edit.php?post_type=sfwd-courses',
@@ -276,13 +311,13 @@ function learndash_admin_tabs() {
 		),
 		40 => array(
 			'link'	=> 'edit.php?post_type=sfwd-lessons',
-			'name'	=> __( 'Lessons', 'learndash' ),
+			'name'	=> LearnDash_Custom_Label::get_label( 'lessons' ),
 			'id'	=> 'edit-sfwd-lessons',
 			'menu_link'	=> 'edit.php?post_type=sfwd-lessons',
 		),
 		50 => array(
 			'link'	=> 'edit.php?post_type=sfwd-lessons&page=sfwd-lms_sfwd_lms.php_post_type_sfwd-lessons',
-			'name'	=> __( 'Lesson Options', 'learndash' ),
+			'name'	=> sprintf( _x( '%s Options', 'Lesson Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
 			'id'	=> 'sfwd-lessons_page_sfwd-lms_sfwd_lms_post_type_sfwd-lessons',
 			'menu_link'	=> 'edit.php?post_type=sfwd-lessons',
 		),
@@ -294,7 +329,7 @@ function learndash_admin_tabs() {
 		),
 		70 => array(
 			'link'	=> 'edit.php?post_type=sfwd-topic',
-			'name'	=> __( 'Topics', 'learndash' ),
+			'name'	=> LearnDash_Custom_Label::get_label( 'topics' ),
 			'id'	=> 'edit-sfwd-topic',
 			'menu_link'	=> 'edit.php?post_type=sfwd-topic',
 		),
@@ -306,13 +341,19 @@ function learndash_admin_tabs() {
 		),
 		90 => array(
 			'link'	=> 'edit.php?post_type=sfwd-quiz',
-			'name'	=> __( 'Quizzes', 'learndash' ),
+			'name'	=> LearnDash_Custom_Label::get_label( 'quizzes' ),
 			'id'	=> 'edit-sfwd-quiz',
 			'menu_link'	=> 'edit.php?post_type=sfwd-quiz',
 		),
+		91 => array(
+			'link'	=> 'edit.php?post_type=sfwd-essays',
+			'name'	=> __( 'Submitted Essays', 'learndash' ),
+			'id'	=> 'edit-sfwd-essays',
+			'menu_link'	=> 'edit.php?post_type=sfwd-essays',
+		),
 		100 => array(
 			'link'	=> 'admin.php?page=ldAdvQuiz&module=globalSettings',
-			'name'	=> __( 'Quiz Options', 'learndash' ),
+			'name'	=> sprintf( _x( '%s Options', 'Quiz Options Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
 			'id'	=> 'admin_page_ldAdvQuiz_globalSettings',
 			'cap'	=> 'wpProQuiz_change_settings',
 			'menu_link'	=> 'edit.php?post_type=sfwd-quiz',
@@ -326,7 +367,7 @@ function learndash_admin_tabs() {
 		),
 		95 => array(
 			'link'	=> 'post.php?post=[post_id]&action=edit',
-			'name'	=> __( 'Edit Quiz', 'learndash' ),
+			'name'	=> sprintf( _x( 'Edit %s', 'Edit Quiz Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ),
 			'id'	=> 'sfwd-quiz_edit',
 			'menu_link'	=> 'edit.php?post_type=sfwd-quiz',
 		),
@@ -370,6 +411,12 @@ function learndash_admin_tabs() {
 			'link'	=> 'edit.php?post_type=sfwd-courses&page=sfwd-lms_sfwd_lms.php_post_type_sfwd-courses',
 			'name'	=> __( 'PayPal Settings', 'learndash' ),
 			'id'	=> 'sfwd-courses_page_sfwd-lms_sfwd_lms_post_type_sfwd-courses',
+			'menu_link'	=> 'edit.php?post_type=sfwd-courses&page=sfwd-lms_sfwd_lms.php_post_type_sfwd-courses',
+		),
+		136 => array(
+			'link'	=> 'admin.php?page=learndash_custom_label',
+			'name'	=> __( 'Custom Labels', 'learndash' ),
+			'id'	=> 'admin_page_learndash_custom_label',
 			'menu_link'	=> 'edit.php?post_type=sfwd-courses&page=sfwd-lms_sfwd_lms.php_post_type_sfwd-courses',
 		),
 		140 => array(
@@ -445,11 +492,14 @@ function learndash_admin_tabs() {
 			'edit-sfwd-topic' => array( 60, 70 ),
 			'sfwd-topic' => array( 60, 70 ),
 
-			'edit-sfwd-quiz' => array( 80, 90, 100, 101 ),
-			'sfwd-quiz' => array( 80, 90, 100, 101 ),
+			'edit-sfwd-essays' => array( 80, 90, 100, 91, 101 ),
+			'sfwd-essays' => array( 80, 90, 100, 91, 101 ),
+
+			'edit-sfwd-quiz' => array( 80, 90, 100, 91, 101 ),
+			'sfwd-quiz' => array( 80, 90, 100, 91, 101 ),
 			'sfwd-quiz_edit' => array( 80, 90, 100, 101, 95 ),
-			'admin_page_ldAdvQuiz' => array( 80, 90, 100, 101 ),
-			'admin_page_ldAdvQuiz_globalSettings' => array( 80, 90, 100, 101 ),
+			'admin_page_ldAdvQuiz' => array( 80, 90, 100, 91, 101  ),
+			'admin_page_ldAdvQuiz_globalSettings' => array( 80, 90, 100, 91, 101  ),
 
 			'edit-sfwd-certificates' => array( 110, 120, 130 ),
 			'admin_page_learndash-lms-certificate_shortcodes' => array( 110, 120, 130 ),
@@ -458,8 +508,9 @@ function learndash_admin_tabs() {
 			'admin_page_learndash-lms-reports' => array( 160, 22 ),
 			'edit-sfwd-transactions' => array( 160, 22 ),
 
-			'sfwd-courses_page_sfwd-lms_sfwd_lms_post_type_sfwd-courses' => array( 135, 140, 150 ),
-			'admin_page_nss_plugin_license-sfwd_lms-settings' => array( 135, 140, 150 ),
+			'sfwd-courses_page_sfwd-lms_sfwd_lms_post_type_sfwd-courses' => array( 135, 136, 140, 150 ),
+			'admin_page_nss_plugin_license-sfwd_lms-settings' => array( 135, 136, 140, 150 ),
+			'admin_page_learndash_custom_label' => array( 135, 136, 140, 150 ),
 	);
 
 	if ( isset( $_GET['post_type'] ) && $_GET['post_type'] == 'sfwd-courses' ) {
@@ -467,7 +518,7 @@ function learndash_admin_tabs() {
 		$admin_tabs_on_page['edit-post_tag'] = array( 0, 10, 28, 24, 26 );
 	}
 
-	$current_page_id = get_current_screen()->id;//echo $current_page_id;
+	$current_page_id = get_current_screen()->id; //echo $current_page_id;
 
 	$post_id = ! empty( $_GET['post_id'] ) ? $_GET['post_id'] : ( empty( $_GET['post'] ) ? 0 : $_GET['post'] );
 
@@ -490,14 +541,35 @@ function learndash_admin_tabs() {
 			$quiz_id = learndash_get_setting( $post_id, 'quiz_pro', true );
 
 			if ( ! empty( $quiz_id ) ) {
-				$admin_tabs_on_page[ $current_page_id ] = array( 80, 90, 100, 101, 95, 102, 104, 106 );
+				$admin_tabs_on_page[ $current_page_id ] = array( 80, 90, 100, 91, 101, 95, 102, 104, 106 );
 				foreach ( $admin_tabs_on_page[ $current_page_id ] as $admin_tab_id ) {
 					$admin_tabs[ $admin_tab_id ]['link'] = str_replace( '[quiz_id]', $quiz_id, $admin_tabs[ $admin_tab_id ]['link'] );
 				}
 			}
 
 		}
+	}
 
+	if ( ( $current_page_id == 'edit-sfwd-essays') || ( $current_page_id == 'sfwd-essays') ) {
+		if ( ! empty( $post_id ) ) {
+		
+			if (($current_page_id == 'edit-sfwd-essays') && (isset($_GET['quiz_id']))) {
+				$quiz_id = intval($_GET['quiz_id']);
+			} else if ($current_page_id == 'sfwd-essays') {
+				$quiz_id = get_post_meta($post_id, 'quiz_id', true);			
+			}
+	
+			if ( ! empty( $quiz_id ) ) {
+			
+				$admin_tabs[91]['id'] = $current_page_id;
+			
+				$admin_tabs_on_page[ $current_page_id ] = array( 80, 90, 100, 91, 101 );
+				
+				foreach ( $admin_tabs_on_page[ $current_page_id ] as $admin_tab_id ) {
+					$admin_tabs[ $admin_tab_id ]['link'] = str_replace( '[quiz_id]', $quiz_id, $admin_tabs[ $admin_tab_id ]['link'] );
+				}
+			}
+		}
 	}
 
 	/**
@@ -530,7 +602,7 @@ function learndash_admin_tabs() {
 	}
 
 	if ( ! empty( $admin_tabs_on_page[ $current_page_id ] ) && count( $admin_tabs_on_page[ $current_page_id ] ) ) {
-		echo '<h2 class="nav-tab-wrapper">';
+		echo '<h1 class="nav-tab-wrapper">';
 		$tabid = 0;
 		foreach ( $admin_tabs_on_page[ $current_page_id] as $admin_tab_id ) {
 			if ( ! empty( $admin_tabs[ $admin_tab_id ]['id'] ) ) {
@@ -540,15 +612,25 @@ function learndash_admin_tabs() {
 				echo '<a href="'.$url.'" class="'.$class.' nav-tab-'.$admin_tabs[ $admin_tab_id ]['id'].'"  '.$target.'>'.$admin_tabs[ $admin_tab_id ]['name'].'</a>';
 			}
 		}
-		echo '</h2>';
+		echo '</h1>';
 	}
 
-	foreach ( $admin_tabs as $admin_tab ) {
-		if ( $current_page_id == trim( $admin_tab['id'] ) ) {
-			global $learndash_current_page_link;
-			$learndash_current_page_link = trim( @$admin_tab['menu_link'] );
-			add_action( 'admin_footer', 'learndash_select_menu' );
-			break;
+	global $learndash_current_page_link;
+	$learndash_current_page_link = '';
+
+	if ($current_page_id == 'sfwd-assignment') {
+		add_action( 'admin_footer', 'learndash_select_menu' );
+	} else {
+
+		foreach ( $admin_tabs as $admin_tab ) {
+			if ( $current_page_id == trim( $admin_tab['id'] ) ) {
+				if (isset($admin_tab['menu_link'])) {
+					$learndash_current_page_link = trim( $admin_tab['menu_link'] );
+				} 
+				
+				add_action( 'admin_footer', 'learndash_select_menu' );
+				break;
+			}
 		}
 	}
 }
@@ -576,7 +658,7 @@ function learndash_admin_bar_link() {
 		$wp_admin_bar->add_menu( array(
 			'id' => 'edit_fixed',
 			'parent' => false,
-			'title' => __( 'Edit Topic', 'learndash' ),
+			'title' => sprintf( _x( 'Edit %s', 'Edit Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) ),
 			'href' => get_edit_post_link( $post->id )
 		) );
 	}
@@ -592,13 +674,13 @@ function learndash_admin_bar_link() {
 function learndash_lms_reports_page() {
 	?>
 		<div  id="learndash-reports"  class="wrap">
-			<h2><?php _e( 'User Reports', 'learndash' ); ?></h2>
+			<h1><?php _e( 'User Reports', 'learndash' ); ?></h1>
 			<br>
 			<div class="sfwd_settings_left">
 				<div class=" " id="sfwd-learndash-reports_metabox">
 					<div class="inside">
-						<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=learndash-lms-reports&action=sfp_update_module&nonce-sfwd='.wp_create_nonce( 'sfwd-nonce' ).'&page_options=sfp_home_description&courses_export_submit=Export' ); ?>"><?php _e( 'Export User Course Data', 'learndash' ); ?></a>
-						<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=learndash-lms-reports&action=sfp_update_module&nonce-sfwd='.wp_create_nonce( 'sfwd-nonce' ).'&page_options=sfp_home_description&quiz_export_submit=Export' ); ?>"><?php _e( 'Export Quiz Data', 'learndash' ); ?></a>
+						<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=learndash-lms-reports&action=sfp_update_module&nonce-sfwd='.wp_create_nonce( 'sfwd-nonce' ).'&page_options=sfp_home_description&courses_export_submit=Export' ); ?>"><?php printf( _x( 'Export User %s Data', 'Export User Course Data Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></a>
+						<a class="button-primary" href="<?php echo admin_url( 'admin.php?page=learndash-lms-reports&action=sfp_update_module&nonce-sfwd='.wp_create_nonce( 'sfwd-nonce' ).'&page_options=sfp_home_description&quiz_export_submit=Export' ); ?>"><?php printf( _x( 'Export %s Data', 'Export Quiz Data Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'quiz' ) ); ?></a>
 						<?php
 							/**
 							 * Run actions after report page buttons print
@@ -668,7 +750,9 @@ function add_shortcode_data_columns( $cols ) {
 function add_course_data_columns( $cols ) {
 	return array_merge(
 		array_slice( $cols, 0, 3 ),
-		array( 'course' => __( 'Assigned Course', 'learndash' ) ),
+		array( 
+			'course' => sprintf( _x( 'Assigned %s', 'Assigned Course Label', 'learndash' ) , LearnDash_Custom_Label::get_label( 'course' ) ) 
+		),
 		array_slice( $cols, 3 )
 	);
 }
@@ -687,8 +771,8 @@ function add_lesson_data_columns( $cols ) {
 	return array_merge(
 		array_slice( $cols, 0, 3 ),
 		array(
-			'lesson' => __( 'Assigned Lesson', 'learndash' ),
-			'course' => __( 'Assigned Course', 'learndash' ),
+			'lesson' => sprintf( _x( 'Assigned %s', 'Assigned Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) ),
+			'course' => sprintf( _x( 'Assigned %s', 'Assigned Course Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ),
 		),
 		array_slice( $cols, 3 )
 	);
@@ -712,6 +796,34 @@ function add_assignment_data_columns( $cols ) {
 		),
 		array_slice( $cols, 3 )
 	);
+}
+
+
+
+
+/**
+ * Add custom columns to the Essays post type
+ * 
+ * @since 2.1.0
+ *
+ * @param array 	$cols 	admin columns for post type
+ * @return array 	$cols 	admin columns for post type
+ */
+function add_essays_data_columns( $cols ) {
+
+	unset( $cols['title'] );
+	unset( $cols['date'] );
+
+	$essay_columns = array(
+		'title' => __( 'Essay Question Title', 'learndash' ),
+		'course' => __( 'Assigned Course', 'learndash' ),
+		'lesson' => __( 'Assigned Lesson', 'learndash' ),
+		'quiz'	=> __( 'Assigned Quiz', 'learndash' ),
+		'author' => __( 'Submitted By', 'learndash' ),
+		'date' => __( 'Date', 'learndash' ),
+	);
+
+	return array_merge( $cols, $essay_columns );
 }
 
 
@@ -823,11 +935,11 @@ function manage_asigned_course_columns( $column_name, $id ){
 function restrict_listings_by_course() {
 	global $pagenow;
 
-	if ( is_admin() AND $pagenow == 'edit.php'  AND isset( $_GET['post_type'] ) AND ( $_GET['post_type'] == 'sfwd-lessons' OR $_GET['post_type'] == 'sfwd-topic' OR $_GET['post_type'] == 'sfwd-quiz' OR $_GET['post_type'] == 'sfwd-assignment') ) {
+	if ( is_admin() AND $pagenow == 'edit.php'  AND isset( $_GET['post_type'] ) AND ( $_GET['post_type'] == 'sfwd-lessons' OR $_GET['post_type'] == 'sfwd-topic' OR $_GET['post_type'] == 'sfwd-quiz' OR $_GET['post_type'] == 'sfwd-assignment' OR $_GET['post_type'] == 'sfwd-essays' ) ) {
 
 		$filters = get_posts( 'post_type=sfwd-courses&posts_per_page=-1' );
 		echo "<select name='course_id' id='course_id' class='postform'>";
-		echo "<option value=''>".__( 'Show All Courses', 'learndash' ).'</option>';
+		echo "<option value=''>". sprintf( _x( 'Show All %s', 'Show All Courses Option Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'courses' ) ).'</option>';
 
 		foreach ( $filters as $post ) {
 			echo '<option value='. $post->ID, ( $_GET['course_id'] == $post->ID ? ' selected="selected"' : '').'>' . $post->post_title .'</option>';
@@ -835,12 +947,24 @@ function restrict_listings_by_course() {
 
 		echo '</select>';
 
-		if ( $_GET['post_type'] == 'sfwd-topic' OR $_GET['post_type'] == 'sfwd-assignment' ) {
+		if ( $_GET['post_type'] == 'sfwd-topic' OR $_GET['post_type'] == 'sfwd-assignment' OR $_GET['post_type'] == 'sfwd-essays' ) {
 			$filters = get_posts( 'post_type=sfwd-lessons&posts_per_page=-1' );
 			echo "<select name='lesson_id' id='lesson_id' class='postform'>";
-			echo "<option value=''>".__( 'Show All Lessons', 'learndash' ).'</option>';
+			echo "<option value=''>".sprintf( _x( 'Show All %s', 'Show All Lessons Option Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lessons' ) ).'</option>';
 			foreach ( $filters as $post ) {
 				echo '<option value='. $post->ID, ( $_GET['lesson_id'] == $post->ID ? ' selected="selected"' : '').'>' . get_the_title( $post->ID ) .'</option>';
+			}
+			echo '</select>';
+		}
+
+		if ( $_GET['post_type'] == 'sfwd-essays' ) {
+
+			$quiz    = new WpProQuiz_Model_QuizMapper();
+			$quizzes = $quiz->fetchAll();
+			echo "<select name='quiz_id' id='quiz_id' class='postform'>";
+			echo "<option value=''>".__( 'Show All Quizzes', 'learndash' ).'</option>';
+			foreach ( $quizzes as $quiz ) {
+				echo '<option value='. $quiz->getId(), ( $_GET['quiz_id'] == $quiz->getId() ? ' selected="selected"' : '').'>' . $quiz->getName() .'</option>';
 			}
 			echo '</select>';
 		}
@@ -851,7 +975,7 @@ function restrict_listings_by_course() {
 					$selected_1 = 'selected="selected"';
 					$selected_0 = '';
 				}
-			} else if ( $_GET['approval_status'] == 0 ) {
+			} else if ((isset($_GET['approval_status'])) && ( $_GET['approval_status'] == 0 )) {
 				$selected_0 = 'selected="selected"';
 				$selected_1 = '';
 			}
@@ -882,18 +1006,31 @@ function course_table_filter( $query ) {
 	global $pagenow;
 	$q_vars = &$query->query_vars;
 
-	if ( is_admin() AND $pagenow == 'edit.php'  AND ! empty( $_GET['course_id'] ) AND ( $query->query['post_type'] == 'sfwd-lessons' OR $query->query['post_type'] == 'sfwd-topic' OR $query->query['post_type'] == 'sfwd-quiz' OR $query->query['post_type'] == 'sfwd-assignment') ) {
+	if ( is_admin() AND $pagenow == 'edit.php'  AND ! empty( $_GET['course_id'] ) AND ( $query->query['post_type'] == 'sfwd-lessons' OR $query->query['post_type'] == 'sfwd-topic' OR $query->query['post_type'] == 'sfwd-quiz' OR $query->query['post_type'] == 'sfwd-assignment' OR $query->query['post_type'] == 'sfwd-essays' ) ) {
 		$q_vars['meta_query'][] = array(
 			'key' => 'course_id',
 			'value'	=> $_GET['course_id'],
 		);
 	}
 
-	if ( is_admin() AND $pagenow == 'edit.php'  AND ! empty( $_GET['lesson_id'] ) AND ( $query->query['post_type'] == 'sfwd-topic' OR $query->query['post_type'] == 'sfwd-assignment') ) {
+	if ( is_admin() AND $pagenow == 'edit.php'  AND ! empty( $_GET['lesson_id'] ) AND ( $query->query['post_type'] == 'sfwd-topic' OR $query->query['post_type'] == 'sfwd-assignment' OR $query->query['post_type'] == 'sfwd-essays' ) ) {
 		$q_vars['meta_query'][] = array(
 			'key' => 'lesson_id',
 			'value'	=> $_GET['lesson_id'],
 		);
+	}
+
+	if ( is_admin() AND $pagenow == 'edit.php'  AND ! empty( $_GET['quiz_id'] ) AND ( $query->query['post_type'] == 'sfwd-essays' ) ) {
+		$quiz_id = intval( $_GET['quiz_id'] );
+		$q_vars['meta_query'][] = array(
+			'key' => 'quiz_id',
+			'value'	=> $quiz_id,
+		);
+	}
+
+	// set custom post status anytime we are looking at essays with no particular post status
+	if ( is_admin() AND $pagenow == 'edit.php'  AND ! isset( $_GET['post_status'] ) AND ( $query->query['post_type'] == 'sfwd-essays' ) ) {
+		$q_vars['post_status'] = array( 'graded', 'not_graded' );
 	}
 
 	if ( is_admin() AND $pagenow == 'edit.php'  AND isset( $_GET['approval_status'] ) AND ( $query->query['post_type'] == 'sfwd-topic' OR $query->query['post_type'] == 'sfwd-assignment') ) {
@@ -1117,7 +1254,7 @@ function learndash_certificate_shortcodes_page() {
 function learndash_course_shortcodes_page() {
 	?>
 	<div  id='course-shortcodes'  class='wrap'>
-		<h2><?php _e('Course Shortcodes', 'learndash' ); ?></h2>
+		<h1><?php printf( _x( '%s Shortcodes', 'Course Shortcodes Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h1>
 		<div class='sfwd_options_wrapper sfwd_settings_left'>
 			<div class='postbox ' id='sfwd-course_metabox'>
 				<div class='inside'>
@@ -1156,9 +1293,9 @@ function learndash_course_shortcodes_page() {
                     <br>
 					<p><b>[user_groups]</b></p><p>' . __( 'This shortcode displays the list of groups users are assigned to as users or leaders.', 'learndash' ) . '</p>
 					<br>
-					<p><b>[learndash_payment_buttons]</b></p><p>' . __( 'This shortcode displays can show the payment buttons on any page. Example: <strong>[learndash_payment_buttons course_id="123"]</strong> shows the payment buttons for course with Course ID: 123', 'learndash' ) . '</p>
+					<p><b>[learndash_payment_buttons]</b></p><p>' . sprintf( __( 'This shortcode displays can show the payment buttons on any page. Example: <strong>[learndash_payment_buttons course_id="123"]</strong> shows the payment buttons for %s with %s ID: 123', 'learndash' ), LearnDash_Custom_Label::label_to_lower( 'course' ), LearnDash_Custom_Label::get_label( 'courses' ) ) . '</p>
 					<br>
-					<p><b>[course_content]</b></p><p>' . __( 'This shortcode displays the Course Content table (course lessons, topics, and quizzes) when inserted on a page or post. Example: <strong>[course_content course_id="123"]</strong> shows the course content for course with Course ID: 123', 'learndash' ) . '</p>
+					<p><b>[course_content]</b></p><p>' . sprintf( __( 'This shortcode displays the %s Content table (course lessons, topics, and quizzes) when inserted on a page or post. Example: <strong>[course_content course_id="123"]</strong> shows the course %s for course with %s ID: 123', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ), LearnDash_Custom_Label::label_to_lower( 'course' ), LearnDash_Custom_Label::get_label( 'course' ) ) . '</p>
 					';
 					?>
 				</div>

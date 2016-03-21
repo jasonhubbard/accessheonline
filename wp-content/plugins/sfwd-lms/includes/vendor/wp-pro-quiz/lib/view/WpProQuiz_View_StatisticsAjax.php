@@ -398,7 +398,29 @@ class WpProQuiz_View_StatisticsAjax extends WpProQuiz_View_View {
 					$assessment = do_shortcode(apply_filters('comment_text', $assessmentData['replace']));
 						
 					echo preg_replace_callback('#@@wpProQuizAssessment@@#im', array($this, 'assessmentCallback'), $assessment);
-			 	}?>
+			 	} else if($anserType == 'essay') {
+					if ((isset($sAnswerData['graded_id'])) && (!empty($sAnswerData['graded_id']))) {
+						$essay_post_status = get_post_status( $sAnswerData['graded_id'] );						
+						$essay_post_status_str = '';
+						if ($essay_post_status == 'graded') {
+							$essay_post_status_str = __('Graded', 'wp-pro-quiz');
+						} else {
+							$essay_post_status_str = __('Not Graded', 'wp-pro-quiz');
+						}
+						?><li class="<?php echo $correct; ?>">
+							<div class="wpProQuiz_sortable">
+								<?php 
+									echo __('Status', 'wp_pro_quiz') .' : '. $essay_post_status_str; 
+									if ( current_user_can( 'edit_post', $sAnswerData['graded_id'] ) ) {
+										?> (<a target="_blank" href="<?php echo get_edit_post_link( $sAnswerData['graded_id'] ); ?>"><?php _e('view', 'wp-pro-quiz') ?></a>)<?php
+									}
+								?>
+							</div>
+						</li>
+						<?php
+					}
+				} ?>
+					
 			<?php } ?>
 		</ul>
 	<?php

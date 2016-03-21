@@ -18,6 +18,9 @@
  * @return string      shortcode output
  */
 function learndash_quizinfo( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$shortcode_atts = shortcode_atts(
 		array(
 			'show'    => '', //[score], [count], [pass], [rank], [timestamp], [pro_quizid], [points], [total_points], [percentage], [timespent]
@@ -122,6 +125,9 @@ add_shortcode( 'quizinfo', 'learndash_quizinfo' );
  * @return string      shortcode output
  */
 function learndash_courseinfo( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+	
 	$shortcode_atts = shortcode_atts(
 			array(
 				'show'      => '', //name, cumulative_score, completed_on
@@ -169,10 +175,12 @@ function learndash_courseinfo( $attr ) {
 
 			$scores = array();
 
-			foreach ( $quizdata as $data ) {
-				if ( in_array( $data['quiz'], $quizzes ) ) {
-					if ( empty( $scores[ $data['quiz'] ] ) || $scores[ $data['quiz'] ] < $data[ $field ] ) {
-						$scores[ $data['quiz'] ] = $data[ $field ];
+			if ( ( !empty( $quizdata ) ) && ( is_array( $quizdata ) ) ) {
+				foreach ( $quizdata as $data ) {
+					if ( in_array( $data['quiz'], $quizzes ) ) {
+						if ( empty( $scores[ $data['quiz'] ] ) || $scores[ $data['quiz'] ] < $data[ $field ] ) {
+							$scores[ $data['quiz'] ] = $data[ $field ];
+						}
 					}
 				}
 			}
@@ -212,10 +220,12 @@ function learndash_courseinfo( $attr ) {
 
 			$scores = array();
 			
-			foreach ( $quizdata as $data ) {
-				if ( in_array( $data['quiz'], $quizzes ) ) {
-					if ( empty( $scores[ $data['quiz'] ] ) || $scores[ $data['quiz'] ] < $data[ $field ] ) {
-						$scores[ $data['quiz'] ] = $data[ $field ];
+			if ( ( !empty( $quizdata ) ) && ( is_array( $quizdata ) ) ) {
+				foreach ( $quizdata as $data ) {
+					if ( in_array( $data['quiz'], $quizzes ) ) {
+						if ( empty( $scores[ $data['quiz'] ] ) || $scores[ $data['quiz'] ] < $data[ $field ] ) {
+							$scores[ $data['quiz'] ] = $data[ $field ];
+						}
 					}
 				}
 			}

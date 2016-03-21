@@ -2,13 +2,17 @@
 class WpProQuiz_Model_AnswerTypes extends WpProQuiz_Model_Model {
 	protected $_answer = '';
 	protected $_html = false;
-	protected $_points = 1;
+	protected $_points = LEARNDASH_LMS_DEFAULT_ANSWER_POINTS;
 	
 	protected $_correct = false;
 	
 	protected $_sortString = '';
 	protected $_sortStringHtml = false;
-	
+
+	protected $_graded = false;
+	protected $_gradingProgression = null;
+	protected $_gradedType = null;
+
 	public function setAnswer($_answer) {
 		$this->_answer = (string)$_answer;
 		return $this;
@@ -62,4 +66,32 @@ class WpProQuiz_Model_AnswerTypes extends WpProQuiz_Model_Model {
 	public function isSortStringHtml() {
 		return $this->_sortStringHtml;
 	}
+
+	public function setGraded($_graded) {
+		$this->_graded = (string)$_graded;
+		return $this;
+	}
+
+	public function isGraded() {
+		return $this->_graded;
+	}
+
+	public function setGradedType($_gradedType) {
+		$this->_gradedType = (string)$_gradedType;
+		return $this;
+	}
+
+	public function getGradedType() {
+		return $this->_gradedType;
+	}
+
+	public function setGradingProgression($_gradingProgression) {
+		$this->_gradingProgression = (string)$_gradingProgression;
+		return $this;
+	}
+
+	public function getGradingProgression() {
+		return $this->_gradingProgression;
+	}
+
 }

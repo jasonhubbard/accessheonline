@@ -116,7 +116,7 @@ if (!defined('K_TCPDF_EXTERNAL_CONFIG')) {
 	/**
 	 * page orientation (P=portrait, L=landscape)
 	 */
-	define ('PDF_PAGE_ORIENTATION', 'P');
+	define ('PDF_PAGE_ORIENTATION', 'L');
 
 	/**
 	 * document creator

@@ -70,8 +70,14 @@ class LD_QuizPro {
 	 *
 	 */
 	function ld_adv_quiz_pro_ajax() {
-		$func = isset( $_REQUEST['func'] ) ? $_REQUEST['func'] : '';
-		$data = isset( $_REQUEST['data'] ) ? $_REQUEST['data'] : null;
+
+		// First we unpack the $_POST['results'] string
+		if ( ( isset( $_POST['data']['responses'] ) ) && ( !empty( $_POST['data']['responses'] ) ) && ( is_string( $_POST['data']['responses'] ) ) ) {
+			$_POST['data']['responses'] = json_decode( stripslashes( $_POST['data']['responses'] ), true );
+		}
+
+		$func = isset( $_POST['func'] ) ? $_POST['func'] : '';
+		$data = isset( $_POST['data'] ) ? (array)$_POST['data'] : null;
 
 		switch ( $func ) {
 			case 'checkAnswers':
@@ -81,8 +87,6 @@ class LD_QuizPro {
 
 		exit;
 	}
-
-
 
 	/**
 	 * Check answers for submitted quiz
@@ -118,15 +122,17 @@ class LD_QuizPro {
 		$question_index = 0;
 
 		foreach ( $data['responses'] as $question_id => $info ) {
+			$userResponse = $info['response'];	
 
-			$userResponse = $info['response'];
-
-			if ( is_array( $userResponse ) ) {
+			if ( ( is_array( $userResponse ) ) && ( !empty( $userResponse) ) ) {
 				foreach ( $userResponse as $key => $value ) {
-					if ( $value == 'false' ) {
-						$userResponse[ $key ] = false;
-					} else if ( $value == 'true' ) {
-						$userResponse[ $key ] = true;
+					if ( ( $value != 0) && ($value != 1) ) {
+						
+						if ( $value == "false" ) {
+							$userResponse[ $key ] = false;
+						} else if ( $value == "true" ) {
+							$userResponse[ $key ] = true;
+						}
 					}
 				}
 			}
@@ -150,7 +156,17 @@ class LD_QuizPro {
 
 			switch ( $questionData['type'] ) {
 				case 'free_answer':
-					$correct = (strtolower( $userResponse ) == strtolower( $questionData['correct'][0] ));
+					//$correct = (strtolower( $userResponse ) == strtolower( $questionData['correct'][0] ));
+					
+					$correct = false;
+					foreach($questionData['correct'] as $questionData_correct) {
+						if (stripslashes(strtolower( $userResponse )) == stripslashes(strtolower( $questionData_correct ))) {
+							
+							$correct = true;
+							break;
+						}
+					}
+
 					$points  = ( $correct) ? $questionData['points'] : 0;
 
 					if ( ! $quiz->isDisabledAnswerMark() && empty( $questionData['disCorrect'] ) ) {
@@ -185,6 +201,9 @@ class LD_QuizPro {
 								$correct = false;
 							}
 
+							$points = apply_filters( 'learndash_ques_multiple_answer_pts_each', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
+							$correct = apply_filters( 'learndash_ques_multiple_answer_correct_each', $correct, $questionData, $answerIndex, $correctAnswer, $userResponse );
+
 						} else {
 
 							/**
@@ -215,6 +234,9 @@ class LD_QuizPro {
 								break;
 							}
 
+							$points = apply_filters( 'learndash_ques_multiple_answer_pts_whole', $points, $questionData, $answerIndex, $correctAnswer, $userResponse );
+							$correct = apply_filters( 'learndash_ques_multiple_answer_correct_whole', $correct, $questionData, $answerIndex, $correctAnswer, $userResponse );
+
 						}
 
 
@@ -229,22 +251,21 @@ class LD_QuizPro {
 
 				case 'single':
 					foreach ( $questionData['correct'] as $answerIndex => $correctAnswer ) {
-						if ( empty( $userResponse[ $answerIndex ] ) ) {
-							continue;
-						}
+						if ($userResponse[ $answerIndex ] == true) {
 
-						if ( ! empty( $questionData['diffMode'] ) || ! empty( $correctAnswer ) ) {
-							//DiffMode or Correct
-							if ( is_array( $questionData['points'] ) ) {
-								$points = $questionData['points'][ $answerIndex ];
-							} else {
-								$points = $questionData['points'];
+							if ( ! empty( $questionData['diffMode'] ) || ! empty( $correctAnswer ) ) {
+								//DiffMode or Correct
+								if ( is_array( $questionData['points'] ) ) {
+									$points = $questionData['points'][ $answerIndex ];
+								} else {
+									$points = $questionData['points'];
+								}
 							}
-						}
 
-						if ( ! empty( $correctAnswer) || ! empty( $questionData['disCorrect'] ) ) {
-							//Correct
-							$correct = true;
+							if ( ! empty( $correctAnswer) || ! empty( $questionData['disCorrect'] ) ) {
+								//Correct
+								$correct = true;
+							}
 						}
 					}
 
@@ -252,7 +273,6 @@ class LD_QuizPro {
 						$extra['r'] = $userResponse;
 						$extra['c'] = $questionData['correct'];
 					}
-
 					break;
 
 				case 'sort_answer':
@@ -291,8 +311,9 @@ class LD_QuizPro {
 
 				case 'cloze_answer':
 					$correct = true;
+					
 					foreach ( $questionData['correct'] as $answerIndex => $correctArray ) {
-						if ( ! isset( $userResponse[ $answerIndex ] ) || ! in_array( $userResponse[ $answerIndex ], $correctArray ) ) {
+						if ( ! isset( $userResponse[ $answerIndex ] ) || ! in_array( stripslashes($userResponse[ $answerIndex ]), $correctArray ) ) {
 							$correct = false;
 							if ( ! $quiz->isDisabledAnswerMark() ) {
 								$statisticsData->{$answerIndex} = false;
@@ -323,6 +344,41 @@ class LD_QuizPro {
 
 					break;
 
+				case 'essay':
+
+					$essay_data = $questionModel->getAnswerData();
+
+					$essay_data = array_shift( $essay_data );
+
+					switch ( $essay_data->getGradingProgression() ) {
+						case 'not-graded-none':
+							$points = 0;
+							$correct = false;
+							$extra['graded_status'] = 'not_graded';
+							break;
+
+						case 'not-graded-full':
+							$points = $essay_data->getPoints();
+							$correct = false;
+							$extra['graded_status'] = 'not_graded';
+							break;
+
+						case 'graded-full' :
+							$points = $essay_data->getPoints();
+							$correct = true;
+							$extra['graded_status'] = 'graded';
+							break;
+
+						default:
+							$points = 0;
+							$correct = false;
+							$extra['graded_status'] = 'not_graded';
+					}
+
+					$essay_id = learndash_add_new_essay_response( $userResponse, $questionModel, $quiz );
+					$extra['graded_id'] = $essay_id;
+					break;
+
 				default:
 					break;
 			}
@@ -341,6 +397,8 @@ class LD_QuizPro {
 				}
 			}
 
+			$extra['possiblePoints'] = $questionModel->getPoints();
+			
 			$results[ $question_id ] = array(
 				'c' => $correct,
 				'p' => $points,
@@ -466,28 +524,96 @@ class LD_QuizPro {
 	}
 
 
+	/**
+	 * Does the list of questions for this quiz have a graded question in it
+	 * Dataset used is not the quizdata saved to user meta, but follows the
+	 * Question Model of WpProQuiz
+	 *
+	 * @since 2.1.0
+	 *
+	 * @param array $questions
+	 *
+	 * @return bool
+	 */
+	static function quiz_has_graded_question( $questions ) {
+		$graded_question_types = array( 'essay' );
+
+		foreach ( $questions as $question ) {
+			if ( ! is_a( $question, 'WpProQuiz_Model_Question' )  ) {
+				continue;
+			}
+
+			if ( in_array( $question->getAnswerType(), $graded_question_types ) ){
+				// found one! halt foreach and return true;
+				return true;
+			}
+		}
+
+		// foreach completed without finding any, return false
+		return false;
+	}
+
+
+
+	/**
+	 * Checks a users submitted quiz attempt to see if that quiz
+	 * has graded questions and if all of them have been graded
+	 *
+	 */
+	static function quiz_attempt_has_ungraded_question( $quiz_attempt ) {
+		foreach( $quiz_attempt['graded'] as $graded ) {
+			if ( 'not_graded' == $graded['status'] ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 
 	/**
 	 * This function runs when a quiz is completed, and does the action 'wp_pro_quiz_completed_quiz'
 	 *
 	 * @since 2.1.0
 	 */
-	function wp_pro_quiz_completed() {
-		$this->debug( $_REQUEST );
+	function wp_pro_quiz_completed( $statistic_ref_id = 0) {
+		
+		$this->debug( $_POST );
 		$this->debug( $_SERVER );
 
-		if ( ! isset( $_REQUEST['quizId'] ) || ! isset( $_REQUEST['results']['comp']['points'] ) ) {
+		$quiz_id   = isset( $_POST['quizId'] ) ? $_POST['quizId'] : null;
+		$score     = isset( $_POST['results']['comp']['correctQuestions'] ) ? $_POST['results']['comp']['correctQuestions'] : null;
+		$points    = isset( $_POST['results']['comp']['points'] ) ? $_POST['results']['comp']['points'] : null;
+		$result    = isset( $_POST['results']['comp']['result'] ) ? $_POST['results']['comp']['result'] : null;
+		$timespent = isset( $_POST['timespent'] ) ? $_POST['timespent'] : null;
+
+		if ( is_null( $quiz_id ) || is_null( $points ) ) {
 			return;
 		}
 
-		$quiz_id   = $_REQUEST['quizId'];
-		$score     = $_REQUEST['results']['comp']['correctQuestions'];
-		$points    = $_REQUEST['results']['comp']['points'];
-		$result    = $_REQUEST['results']['comp']['result'];
-		$timespent = isset( $_POST['timespent'] ) ? $_POST['timespent'] : null;
+		$questionMapper = new WpProQuiz_Model_QuestionMapper();
+		$questions  = $questionMapper->fetchAll( $quiz_id );
+		if ( is_array( $questions ) ) {
+			$questions_count = count( $questions );
+		}
+		
+		// check if these set of questions has questions that need to be graded
+		$has_graded = LD_QuizPro::quiz_has_graded_question( $questions );
 
-		$question  = new WpProQuiz_Model_QuestionMapper();
-		$questions = $question->fetchAll( $quiz_id );
+		// store the id's of the graded question to be saved in usermeta
+		$graded = array();
+		foreach ( $_POST['results'] as $question_id => $individual_result ) {
+			if ( 'comp' == $question_id ) continue;
+			
+			if ( isset( $individual_result['graded_id'] ) && ! empty( $individual_result['graded_id'] ) ) {
+				$graded[ $question_id ] = array(
+						'post_id' => intval( $individual_result['graded_id'] ),
+						'status' => esc_html( $individual_result['graded_status'] ),
+						'points_awarded' => intval( $individual_result['points'] ),
+				);
+			}
+		}
+
 		$this->debug( $questions );
 
 		if ( empty( $result) ) {
@@ -501,7 +627,7 @@ class LD_QuizPro {
 		}
 
 		$count = count( $_REQUEST['results'] ) - 1;
-
+		
 		if ( empty( $user_id) ) {
 			$current_user = wp_get_current_user();
 
@@ -536,30 +662,38 @@ class LD_QuizPro {
 
 		$this->debug(
 			array(
-				'quiz' => $ld_quiz_id,
-				'quiz_title' => $quiz->post_title,
-				'score' => $score,
-				'count' => $total_points,
-				'pass' => $pass,
-				'rank' => '-',
-				'time' => time(),
-				'pro_quizid' => $quiz_id,
+				'quiz' 				=> 	$ld_quiz_id,
+				'quiz_title' 		=> 	$quiz->post_title,
+				'score' 			=> 	$score,
+				'count' 			=> 	$questions_count,
+				'pass' 				=> 	$pass,
+				'rank' 				=> 	'-',
+				'time' 				=> 	time(),
+				'pro_quizid' 		=> 	$quiz_id,
 			)
 		);
 
 		$quizdata = array(
-			'quiz' => $ld_quiz_id,
-			'score' => $score,
-			'count' => $count,
-			'pass' => $pass,
-			'rank' => '-',
-			'time' => time(),
-			'pro_quizid' => $quiz_id,
-			'points' => $points,
-			'total_points' => $total_points,
-			'percentage' => $result,
-			'timespent' => $timespent,
+			'quiz' 					=> 	$ld_quiz_id,
+			'score' 				=> 	$score,
+			'count' 				=> 	$questions_count,
+			'pass' 					=> 	$pass,
+			'rank' 					=> 	'-',
+			'time' 					=> 	time(),
+			'pro_quizid' 			=> 	$quiz_id,
+			'points' 				=> 	$points,
+			'total_points' 			=> 	$total_points,
+			'percentage' 			=> 	$result,
+			'timespent' 			=> 	$timespent,
+			'has_graded'   			=> 	( $has_graded ) ? true : false,
+			'statistic_ref_id' 		=> 	$statistic_ref_id
 		);
+
+		if ( $graded ) {
+			$quizdata['graded'] = $graded;
+		}
+
+		$this->debug( $quizdata );
 
 		$usermeta[] = $quizdata;
 
@@ -650,11 +784,15 @@ class LD_QuizPro {
 			return;
 		}
 
-		$certificate_details = learndash_certificate_details( $post->ID );
 		$continue_link = learndash_quiz_continue_link( $post->ID );
+
 		if ( $post->post_type == 'sfwd-quiz' ) {
 			echo '<script>';
 			echo 'var certificate_details = ' . json_encode( learndash_certificate_details( $post->ID ) ) . ';';
+			echo '</script>';
+
+			echo '<script>';
+			echo 'var certificate_pending = "' . __( 'Certificate Pending - Questions still need to be graded, please check your profile for the status.', 'learndash' ) . '";';
 			echo '</script>';
 
 			/** Continue link will appear through javascript **/
@@ -705,10 +843,10 @@ class LD_QuizPro {
 		}
 
 		if ( $pagenow == 'post-new.php' && @$_GET['post_type'] == 'sfwd-quiz' || $pagenow == 'post.php' && ! empty( $_GET['post'] ) && @get_post( $_GET['post'] )->post_type == 'sfwd-quiz' ) {
-                       //To fix issues with plugins using get_current_screen
-                       $screen_file = ABSPATH . '/wp-admin/includes/screen.php';
-                       require_once( $screen_file );
-                       //To fix issues with plugins using get_current_screen
+			//To fix issues with plugins using get_current_screen
+			$screen_file = ABSPATH . '/wp-admin/includes/screen.php';
+			require_once( $screen_file );
+			//To fix issues with plugins using get_current_screen
 
 			$quizId = 0;
 

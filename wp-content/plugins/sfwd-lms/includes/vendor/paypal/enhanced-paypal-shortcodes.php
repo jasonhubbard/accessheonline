@@ -270,7 +270,8 @@ $atts = shortcode_atts(
 		'notifyurl2'	=> '',
 		'returnurl' 	=> '',
 		'cancelurl' 	=> '',
-		'scriptcode'	=> 'scriptcode',
+//		'scriptcode'	=> 'scriptcode',
+		'scriptcode'	=> '',	// Removed value as this was causing 404 errors
 		'email'			=> '',
 		'currencycode'	=> '',
 		'itemno'		=> '',
@@ -318,6 +319,7 @@ $atts = shortcode_atts(
 	if($atts['lc'] == '')
 		$atts['lc'] = $paypal_country;	
 */		
+$button_text = LearnDash_Custom_Label::get_label( 'button_take_this_course' );		
 switch($atts['type']):
 	case "paynow":
 	$code = '
@@ -397,7 +399,7 @@ switch($atts['type']):
         } else {
                 $code.='<input type="hidden" src="' . $buttonUrl . '" border="0" name="submit" alt="'.ALT_ADD.'" class="ppalbtn">';
         }
-		$code .= '<input type="submit" value="'.__("Take this Course", "learndash").'" class="btn-join" id="btn-join">';
+		$code .= '<input type="submit" value="'.$button_text.'" class="btn-join" id="btn-join">';
 		
         if ($atts['noshipping'] > -1) { 
             $code.='
@@ -523,7 +525,7 @@ case "subscribe":
         } else {
             $code.='<input type="hidden" src="https://www.paypal.com/en_AU/i/btn/btn_subscribeCC_LG.gif" border="0" name="submit" alt="' . __('PayPal - The safer, easier way to pay online.', 'learndash') . '" class="ppalbtn">';
 		}
-		$code .= '<input type="submit" value="'.__("Take this Course", "learndash").'" class="btn-join" id="btn-join">';
+		$code .= '<input type="submit" value="'.$button_text.'" class="btn-join" id="btn-join">';
 		
         if ($atts['email']) {
              $code.='<input type="hidden" name="business" value="'.$atts['email'].'">';
@@ -717,7 +719,7 @@ case "hosted":
         } else {
 	       $code.='<input type="hidden" src="https://www.paypal.com/en_AU/i/btn/btn_subscribeCC_LG.gif" border="0" name="submit" alt="' . __('PayPal - The safer, easier way to pay online.', 'learndash') . '" class="ppalbtn">';
         }
-				$code .= '<input type="submit" value="'.__("Take this Course", "learndash").'" class="btn-join" id="btn-join">';
+				$code .= '<input type="submit" value="'.$button_text.'" class="btn-join" id="btn-join">';
 
        $code.='<img alt="" border="0" src="https://www.paypal.com/en_AU/i/scr/pixel.gif" width="1" height="1" class="ppalholder">
        </form></div>';
@@ -856,7 +858,7 @@ $code = '<div style="';
         } else {
                 $code.='<input type="hidden" src="https://www.paypalobjects.com/en_AU/i/btn/btn_cart_LG.gif" border="0" name="submit" alt="'.ALT_ADD.'" class="ppalbtn">';
         }
-				$code .= '<input type="submit" value="'.__("Take this Course", "learndash").'" class="btn-join" id="btn-join">';
+				$code .= '<input type="submit" value="'.$button_text.'" class="btn-join" id="btn-join">';
 
        $code.='<img alt="" border="0" src="https://www.paypal.com/en_AU/i/scr/pixel.gif" width="1" height="1" class="ppalholder">
        </form></div>';

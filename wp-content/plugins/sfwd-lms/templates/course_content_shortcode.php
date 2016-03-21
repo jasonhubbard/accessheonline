@@ -35,7 +35,7 @@
 ?>
 <?php if ( $has_course_content ) : ?>
 	<div id='learndash_course_content'>
-		<h4 id='learndash_course_content_title'><?php _e( 'Course Content', 'learndash' ); ?></h4>
+		<h4 id='learndash_course_content_title'><?php printf( _x( '%s Content', 'Course Content Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'course' ) ); ?></h4>
 
 		<?php /* Show Lesson List */ ?>
 		<?php if ( ! empty( $lessons ) ) : ?>
@@ -49,7 +49,7 @@
 			<div id='learndash_lessons'>
 
 				<div id='lesson_heading'>
-					<span><?php _e( 'Lessons', 'learndash' ); ?></span>
+					<span><?php echo LearnDash_Custom_Label::get_label( 'lessons' ) ?></span>
 					<span class='right'><?php _e( 'Status', 'learndash' ); ?></span>
 				</div>
 				
@@ -64,7 +64,7 @@
 								<?php  /* Not available message for drip feeding lessons */ ?>
 								<?php if ( ! empty( $lesson['lesson_access_from'] ) ) : ?>
 									<small class='notavailable_message'>
-										<?php echo sprintf( __( 'Available on: %s ', 'learndash' ), date_i18n( 'd-M-Y', $lesson['lesson_access_from'] ) ); ?>
+										<?php echo sprintf( __( 'Available on: %s ', 'learndash' ), learndash_adjust_date_time_display($lesson['lesson_access_from'] ) ); ?>
 									</small>
 								<?php endif; ?>
 								
@@ -103,7 +103,7 @@
 		<?php if ( ! empty( $quizzes ) ) : ?>
 			<div id='learndash_quizzes'>
 				<div id='quiz_heading'>
-					<span><?php _e( 'Quizzes', 'learndash' ); ?></span><span class='right'><?php _e( 'Status', 'learndash' ); ?></span>
+					<span><?php echo LearnDash_Custom_Label::get_label( 'quizzes' ); ?></span><span class='right'><?php _e( 'Status', 'learndash' ); ?></span>
 				</div>
 				<div id='quiz_list'>
 				<?php foreach ( $quizzes as $quiz ) : ?>

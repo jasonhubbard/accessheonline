@@ -25,10 +25,10 @@ function learndash_previous_post_link( $prevlink='', $url = false ) {
 	}
 
 	if ( $post->post_type == 'sfwd-lessons' ) {
-		$link_name = __( 'Previous Lesson', 'learndash' );
+		$link_name = sprintf( _x( 'Previous %s', 'Previous Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) );
 		$posts = learndash_get_lesson_list();
 	} else if ( $post->post_type == 'sfwd-topic' ) {
-		$link_name = __( 'Previous Topic', 'learndash' );
+		$link_name = sprintf( _x( 'Previous %s', 'Previous Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) );
 		$lesson_id = learndash_get_setting( $post, 'lesson' );
 		$posts = learndash_get_topic_list( $lesson_id );
 	} else {
@@ -51,7 +51,7 @@ function learndash_previous_post_link( $prevlink='', $url = false ) {
 			if ( is_rtl() ) {
 				$link_name_with_arrow = $link_name;
 			} else {
-				$link_name_with_arrow = '<span class="meta-nav">&lsaquo;</span> ' . $link_name;
+				$link_name_with_arrow = '<span class="meta-nav">&larr;</span> ' . $link_name;
 			}
 
 			$link = '<a href="'.$permalink.'" rel="prev">' . $link_name_with_arrow . '</a>';
@@ -93,11 +93,11 @@ function learndash_next_post_link( $prevlink='', $url = false, $post = null ) {
 	}
 
 	if ( $post->post_type == 'sfwd-lessons' ) {
-		$link_name = __( 'Next Lesson', 'learndash' );
+		$link_name = sprintf( _x( 'Next %s', 'Next Lesson Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'lesson' ) );
 		$course_id = learndash_get_course_id( $post );
 		$posts = learndash_get_lesson_list( $course_id );
 	} else if ( $post->post_type == 'sfwd-topic' ) {
-		$link_name = __( 'Next Topic', 'learndash' );
+		$link_name = sprintf( _x( 'Next %s', 'Next Topic Label', 'learndash' ), LearnDash_Custom_Label::get_label( 'topic' ) );
 		$lesson_id = learndash_get_setting( $post, 'lesson' );
 		$posts = learndash_get_topic_list( $lesson_id );
 	} else {
@@ -120,7 +120,7 @@ function learndash_next_post_link( $prevlink='', $url = false, $post = null ) {
 			if ( is_rtl() ) {
 				$link_name_with_arrow = $link_name ;
 			} else {
-				$link_name_with_arrow = $link_name . ' <span class="meta-nav">&rsaquo;</span>';
+				$link_name_with_arrow = $link_name . ' <span class="meta-nav">&rarr;</span>';
 			}
 
 			$link = '<a href="'.$permalink.'" rel="next">' . $link_name_with_arrow.'</a>';
@@ -186,12 +186,12 @@ function learndash_quiz_continue_link( $id ) {
 		$url = get_permalink( $return_id );
 		$url .= strpos( 'a'.$url, '?' )? '&':'?';
 		$url .= 'quiz_type=global&quiz_redirect=1&course_id='.$course_id.'&quiz_id='.$id;
-		$returnLink = '<a id="quiz_continue_link" href="'.$url.'">' . __( 'Click Here to Continue ', 'learndash' ) . '</a>';
+		$returnLink = '<a id="quiz_continue_link" href="'.$url.'">' . LearnDash_Custom_Label::get_label( 'button_click_here_to_continue' ) . '</a>';
 	} else	{
 		$url = get_permalink( $return_id );
 		$url .= strpos( 'a'.$url, '?' )? '&':'?';
 		$url .= 'quiz_type=lesson&quiz_redirect=1&lesson_id='.$return_id.'&quiz_id='.$id;
-		$returnLink = '<a id="quiz_continue_link" href="'.$url.'">' . __( 'Click Here to Continue ', 'learndash' ) . '</a>';
+		$returnLink = '<a id="quiz_continue_link" href="'.$url.'">' . LearnDash_Custom_Label::get_label( 'button_click_here_to_continue' ) . '</a>';
 	}
 
 	$version = get_bloginfo( 'version' );
@@ -382,53 +382,68 @@ function learndash_get_lesson_list( $id = null ){
  * @param  int 		$for_lesson_id 
  * @return array 	topics list
  */
-function learndash_get_topic_list( $for_lesson_id = null ){
-	$course_id = learndash_get_course_id( $for_lesson_id );
-	$lessons = sfwd_lms_get_post_options( 'sfwd-lessons' );
-	$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
-	$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
-	$course_order = @$course_options['sfwd-courses_course_lesson_order'];
+function learndash_get_topic_list( $for_lesson_id = null ) {
+	
+	if ( !empty( $for_lesson_id ) ) {
+		$transient_key = "learndash_lesson_topics_". $for_lesson_id;
+	} else {
+		$transient_key = "learndash_lesson_topics_all";
+	}
+	
+	$topics_array = get_transient( $transient_key );
+	if ( $topics_array === false ) {
+		if ( !empty( $for_lesson_id ) ) {
+			$course_id = learndash_get_course_id( $for_lesson_id );
+	
+			$course_options = get_post_meta( $course_id, '_sfwd-courses', true );
+			$course_orderby = @$course_options['sfwd-courses_course_lesson_orderby'];
+			$course_order = @$course_options['sfwd-courses_course_lesson_order'];
 
-	$orderby = ( empty( $course_orderby ) ) ? $lessons['orderby'] : $course_orderby;
-	$order = ( empty( $course_order ) ) ? $lessons['order'] : $course_order;
+			$lessons_options = sfwd_lms_get_post_options( 'sfwd-lessons' );
 
-	$topics = get_posts( array( 
+			$orderby = ( empty( $course_orderby ) ) ? $lessons_options['orderby'] : $course_orderby;
+			$order = ( empty( $course_order ) ) ? $lessons_options['order'] : $course_order;
+		} else {
+			$orderby = 'name';
+			$order = 'ASC';
+		}
+	
+		$topics_query_args = array( 
 			'post_type' => 'sfwd-topic', 
 			'numberposts' => -1, 
 			'orderby' => $orderby, 
 			'order' => $order,
-		) 
-	);
-
-	if ( empty( $topics) ) {
-		return array();
-	}
-
-	foreach ( $topics as $p ){
-		$lesson_id = learndash_get_setting( $p, 'lesson' );
-		if ( ! empty( $lesson_id ) ) {
-			$topics_array[ $lesson_id ][] = $p;
-		}
-	}
-
-	if ( empty( $topics_array ) ) {
-		return array();
-	}
-
-	if ( ! empty( $for_lesson_id ) ) {
-
-		if ( ! empty( $topics_array[ $for_lesson_id ] ) ) {
-			return $topics_array[ $for_lesson_id ];
-		} else {
-			return array();
+		); 
+		
+		if ( !empty( $for_lesson_id ) ) {
+			$topics_query_args['meta_key'] 		= 	'lesson_id';
+			$topics_query_args['meta_value'] 	= 	$for_lesson_id;
+			$topics_query_args['meta_compare'] 	= 	'=';
 		}
 
+		$topics = get_posts( $topics_query_args );
+		
+		if ( !empty( $topics) ) {
+			if ( empty( $for_lesson_id ) ) {
+				$topics_array = array();
+			
+				foreach ( $topics as $topic ) {
+					$lesson_id = learndash_get_setting( $topic, 'lesson' );
+					if ( ! empty( $lesson_id ) ) {
+						$topics_array[ $lesson_id ][] = $topic;
+					}
+				}
+				set_transient( $transient_key, $topics_array, MINUTE_IN_SECONDS );
+				return $topics_array;
+			} else {
+				set_transient( $transient_key, $topics, MINUTE_IN_SECONDS );
+				return $topics;
+			}
+		} 
 	} else {
 		return $topics_array;
 	}
 }
-
-
 
 /**
  * Get quiz list for resource
@@ -451,31 +466,40 @@ function learndash_get_global_quiz_list( $id = null ){
 
 	//COURSEIDCHANGE
 	$course_id = learndash_get_course_id( $id );
-	$course_settings = learndash_get_setting( $course_id );
-	$lessons_options = learndash_get_option( 'sfwd-lessons' );
-	$orderby = ( empty( $course_settings['course_lesson_orderby'] ) ) ? @$lessons_options['orderby'] : $course_settings['course_lesson_orderby'];
-	$order = ( empty( $course_settings['course_lesson_order'] ) ) ? @$lessons_options['order'] : $course_settings['course_lesson_order'];
+	if (!empty($course_id)) {
 
-	$quizzes = get_posts( array( 
-		'post_type' => 'sfwd-quiz', 
-		'posts_per_page' => -1, 
-		'meta_key' => 'course_id', 
-		'meta_value' => $course_id, 
-		'meta_compare' => '=', 
-		'orderby' => $orderby, 
-		'order' => $order
-	));
+		$transient_key = "learndash_quiz_course_". $course_id;
+		$quizzes_new = get_transient( $transient_key );
+		if ( $quizzes_new === false ) {
 
-	$quizzes_new = array();
+			$course_settings = learndash_get_setting( $course_id );
+			$lessons_options = learndash_get_option( 'sfwd-lessons' );
+			$orderby = ( empty( $course_settings['course_lesson_orderby'] ) ) ? @$lessons_options['orderby'] : $course_settings['course_lesson_orderby'];
+			$order = ( empty( $course_settings['course_lesson_order'] ) ) ? @$lessons_options['order'] : $course_settings['course_lesson_order'];
 
-	foreach ( $quizzes as $k => $quiz ) {
-		$quiz_lesson = learndash_get_setting( $quiz, 'lesson' );
-		if ( empty( $quiz_lesson) ) {
-			$quizzes_new[] = $quizzes[ $k ];
-		}
+			$quizzes = get_posts( array( 
+				'post_type' => 'sfwd-quiz', 
+				'posts_per_page' => -1, 
+				'meta_key' => 'course_id', 
+				'meta_value' => $course_id, 
+				'meta_compare' => '=', 
+				'orderby' => $orderby, 
+				'order' => $order
+			));
+
+			$quizzes_new = array();
+
+			foreach ( $quizzes as $k => $quiz ) {
+				$quiz_lesson = learndash_get_setting( $quiz, 'lesson' );
+				if ( empty( $quiz_lesson) ) {
+					$quizzes_new[] = $quizzes[ $k ];
+				}
+			}
+			
+			set_transient( $transient_key, $quizzes_new, MINUTE_IN_SECONDS );
+		} 
+		return $quizzes_new;
 	}
-
-	return $quizzes_new;
 }
 
 

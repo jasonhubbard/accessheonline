@@ -16,7 +16,7 @@
  */
 function learndash_add_theme_support() {
 	if ( ! current_theme_supports( 'post-thumbnails' ) ) {
-		add_theme_support( 'post-thumbnails', array( 'sfwd-certificates', 'sfwd-courses', 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz', 'sfwd-assignment' ) );
+		add_theme_support( 'post-thumbnails', array( 'sfwd-certificates', 'sfwd-courses', 'sfwd-lessons', 'sfwd-topic', 'sfwd-quiz', 'sfwd-assignment', 'sfwd-essays' ) );
 	}
 }
 
@@ -28,13 +28,75 @@ add_action( 'after_setup_theme', 'learndash_add_theme_support' );
  * Get a Quiz Pro's quiz ID
  *
  * @todo   purpose of this function and how quiz pro id's relate to quizzes
- * 
+ *
  * @since 2.1.0
- * 
+ *
  * @param  int $quiz_id  quiz pro id
  * @return int           quiz id
  */
 function learndash_get_quiz_id_by_pro_quiz_id( $quiz_id ) {
+
+	$opt = array(
+		'post_type' 		=> 	'sfwd-quiz',
+		'post_status' 		=> 	array( 'publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+		'posts_per_page'	=> 	1,
+		'orderby'			=>	'date',
+		'order'				=>	'ASC',
+		'meta_query' => array(
+			array(
+				'key'		=>	'quiz_pro_id',
+				'value'		=>	intval($quiz_id),
+				'compare'	=>	'=',
+			),
+		),
+	);
+	
+	$quizzes = get_posts( $opt );
+	if (!empty( $quizzes ) ) {
+		return $quizzes[0]->ID;
+		
+	} else {
+		// Because we seem to have a mix of int and string values when these are serialized the format to look for end up being somewhat kludge-y. 
+		$quiz_id_str = sprintf('%s', $quiz_id);
+		$quiz_id_len = strlen($quiz_id_str);
+	
+		$opt = array(
+			'post_type' 		=> 	'sfwd-quiz',
+			'post_status' 		=> 	array( 'publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
+			// Mot sure why there would ever be more than one matching post for a quiz. 
+			'posts_per_page'	=> 	-1,
+			'orderby'			=>	'date',
+			'order'				=>	'ASC',
+			'meta_query' => array(
+				'relation'		=>	'OR',
+				array(
+					'key'		=>	'_sfwd-quiz',
+					'value'		=>	'sfwd-quiz_quiz_pro";i:'. $quiz_id .';',
+					'compare'	=>	'LIKE',
+				),
+				array(
+					'key' 		=>	'_sfwd-quiz',
+					'value'		=>	'"sfwd-quiz_quiz_pro";s:'. $quiz_id_len .':"'. $quiz_id_str .'"',
+					'compare'	=> 	'LIKE',
+				),
+			),
+		);
+	
+		$quizzes = get_posts( $opt );
+		if (!empty($quizzes)) {
+			foreach ( $quizzes as $quiz ) {
+				if ( $quiz_id == learndash_get_setting( $quiz, 'quiz_pro', true ) ) {
+					// Add the post_meta so next time we don't have to do the LIKE query and loop. 
+					update_post_meta( $quiz->ID, 'quiz_pro_id', $quiz_id );
+					
+					return $quiz->ID;
+				}
+			}
+		}
+	}
+}
+
+function learndash_get_quiz_id_by_pro_quiz_id_ORG( $quiz_id ) {
 	$opt = array(
 		'post_type' => 'sfwd-quiz',
 		'post_status' => array( 'publish', 'pending', 'draft', 'auto-draft', 'future', 'private', 'inherit', 'trash'),
@@ -48,7 +110,6 @@ function learndash_get_quiz_id_by_pro_quiz_id( $quiz_id ) {
 		}
 	}
 }
-
 
 
 /**
@@ -137,28 +198,30 @@ function learndash_get_option( $post_type, $setting = '' ) {
  * @return bool   if update was successful         
  */
 function learndash_update_setting( $post, $setting, $value ) {
-	if ( is_numeric( $post ) ) {
-		$post = get_post( $post );
-	} else if ( empty( $post) || ! is_object( $post ) || empty( $post->ID ) ) {
-		return null;
-	}
-
 	if ( empty( $setting) ) {
 		return null;
 	}
 
-	$meta = get_post_meta( $post->ID, '_'.$post->post_type, true );
-	$meta[ $post->post_type.'_'.$setting] = $value;
+	// Were we sent a post ID?
+	if ( is_numeric( $post ) ) {
+		$post = get_post( $post );
+	} 
+	
+	// Ensure we have a post object or type WP_Post!
+	if ($post instanceof WP_Post) {  
+	
+		$meta = get_post_meta( $post->ID, '_'.$post->post_type, true );
+		$meta[ $post->post_type.'_'.$setting] = $value;
 
-	if ( $setting == 'course' ) {
-		update_post_meta( $post->ID, 'course_id', $value );
-	} else {
-		if ( $setting == 'lesson' ) {
-			update_post_meta( $post->ID, 'lesson_id', $value );
+		if ( $setting == 'course' ) {
+			update_post_meta( $post->ID, 'course_id', $value );
+		} else {
+			if ( $setting == 'lesson' ) {
+				update_post_meta( $post->ID, 'lesson_id', $value );
+			}
 		}
+		return update_post_meta( $post->ID, '_'.$post->post_type, $meta );
 	}
-
-	return update_post_meta( $post->ID, '_'.$post->post_type, $meta );
 }
 
 
@@ -242,6 +305,8 @@ function learndash_payment_buttons( $course ) {
 		return '';
 	}
 
+	$button_text = LearnDash_Custom_Label::get_label( 'button_take_this_course' );
+
 	if ( ! empty( $course_price_type ) && $course_price_type == 'closed' ) {
 
 		if ( empty( $custom_button_url) ) {
@@ -251,7 +316,7 @@ function learndash_payment_buttons( $course ) {
 				$custom_button_url = 'http://'.$custom_button_url;
 			}
 
-			$custom_button = '<a class="btn-join" href="'.$custom_button_url.'" id="btn-join">'.__( 'Take this Course', 'learndash' ).'</a>';
+			$custom_button = '<a class="btn-join" href="'.$custom_button_url.'" id="btn-join">'. $button_text .'</a>';
 		}
 
 		$payment_params = array(
@@ -276,12 +341,12 @@ function learndash_payment_buttons( $course ) {
 		if ( ! empty( $paypal_email ) ) {
 
 			if ( empty( $course_price_type ) || $course_price_type == 'paynow' ) {
-				$paypal_button = wptexturize( do_shortcode( "<div class='learndash_checkout_button learndash_paypal_button'>[paypal type='paynow' amount='{$course_price}' sandbox='{$paypal_sandbox}' email='{$paypal_email}' itemno='{$course->ID}' name='{$course->post_title}' noshipping='1' nonote='1' qty='1' currencycode='{$paypal_currency}' rm='2' notifyurl='{$paypal_notifyurl}' returnurl='{$paypal_returnurl}' scriptcode='scriptcode' imagewidth='100px' pagestyle='paypal' lc='{$paypal_country}' cbt='" . __( 'Complete Your Purchase', 'learndash' ) . "' custom='".$user_id."']</div>" ) );
+				$paypal_button = wptexturize( do_shortcode( "<div class='learndash_checkout_button learndash_paypal_button'>[paypal type='paynow' amount='{$course_price}' sandbox='{$paypal_sandbox}' email='{$paypal_email}' itemno='{$course->ID}' name='{$course->post_title}' noshipping='1' nonote='1' qty='1' currencycode='{$paypal_currency}' rm='2' notifyurl='{$paypal_notifyurl}' returnurl='{$paypal_returnurl}' imagewidth='100px' pagestyle='paypal' lc='{$paypal_country}' cbt='" . __( 'Complete Your Purchase', 'learndash' ) . "' custom='".$user_id."']</div>" ) );
 			} else if ( $course_price_type == 'subscribe' ) {
 				$course_price_billing_p3 = get_post_meta( $course_id, 'course_price_billing_p3',  true );
 				$course_price_billing_t3 = get_post_meta( $course_id, 'course_price_billing_t3',  true );
 				$srt = intval( $course_no_of_cycles );
-				$paypal_button = wptexturize( do_shortcode( "<div class='learndash_checkout_button learndash_paypal_button'>[paypal type='subscribe' a3='{$course_price}' p3='{$course_price_billing_p3}' t3='{$course_price_billing_t3}' sandbox='{$paypal_sandbox}' email='{$paypal_email}' itemno='{$course->ID}' name='{$course->post_title}' noshipping='1' nonote='1' qty='1' currencycode='{$paypal_currency}' rm='2' notifyurl='{$paypal_notifyurl}' returnurl='{$paypal_returnurl}' scriptcode='scriptcode' imagewidth='100px' pagestyle='paypal' lc='{$paypal_country}' cbt='" . __( 'Complete Your Purchase', 'learndash' ) . "' custom='".$user_id."' srt='{$srt}']</div>" ) );
+				$paypal_button = wptexturize( do_shortcode( "<div class='learndash_checkout_button learndash_paypal_button'>[paypal type='subscribe' a3='{$course_price}' p3='{$course_price_billing_p3}' t3='{$course_price_billing_t3}' sandbox='{$paypal_sandbox}' email='{$paypal_email}' itemno='{$course->ID}' name='{$course->post_title}' noshipping='1' nonote='1' qty='1' currencycode='{$paypal_currency}' rm='2' notifyurl='{$paypal_notifyurl}' returnurl='{$paypal_returnurl}' imagewidth='100px' pagestyle='paypal' lc='{$paypal_country}' cbt='" . __( 'Complete Your Purchase', 'learndash' ) . "' custom='".$user_id."' srt='{$srt}']</div>" ) );
 			}
 		}
 
@@ -298,14 +363,35 @@ function learndash_payment_buttons( $course ) {
 		 * @param  string  $paypal_button
 		 */
 		$payment_buttons = apply_filters( 'learndash_payment_button', $paypal_button, $payment_params );
-
+		
 		if ( ! empty( $payment_buttons ) ) {
-			return '<div class="learndash_checkout_buttons">'.$payment_buttons.'</div>';
-		}		
+		
+			if ( ( !empty( $paypal_button ) ) && ( $payment_buttons != $paypal_button ) ) {
+
+				$button = 	'';
+				$button .= 	'<div class="learndash_checkout_buttons">';
+				$button .= 		'<input id="btn-join" class="btn-join button learndash_checkout_button" data-jq-dropdown="#jq-dropdown-1" type="button" value="'. $button_text .'" />';
+				$button .= 	'</div>';
+			
+				global $dropdown_button;
+				$dropdown_button .= 	'<div id="jq-dropdown-1" class="jq-dropdown jq-dropdown-tip checkout-dropdown-button">';
+				$dropdown_button .= 		'<ul class="jq-dropdown-menu">';
+				$dropdown_button .= 		'<li>';
+				$dropdown_button .= 			str_replace($button_text, __('Use Paypal', 'learndash'), $payment_buttons);
+				$dropdown_button .= 		'</li>';
+				$dropdown_button .= 		'</ul>';
+				$dropdown_button .= 	'</div>';
+			
+				return $button;
+				
+			} else {
+				return '<div class="learndash_checkout_buttons">'. $payment_buttons .'</div>';					
+			}
+		}
 	} else {
 		$join_button = '<div class="learndash_join_button"><form method="post">
 							<input type="hidden" value="'.$course->ID.'" name="course_id">
-							<input type="submit" value="'.__( 'Take this Course', 'learndash' ).'" name="course_join" class="btn-join" id="btn-join">
+							<input type="submit" value="'.$button_text.'" name="course_join" class="btn-join" id="btn-join">
 						</form></div>';
 
 		$payment_params = array( 
@@ -327,6 +413,27 @@ function learndash_payment_buttons( $course ) {
 
 }
 
+// Yes, global var here. This var is set within the payment button processing. The var will contain HTML for a fancy dropdown
+$dropdown_button = '';
+add_action("wp_footer", 'ld_footer_payment_buttons');
+function ld_footer_payment_buttons() {
+	global $dropdown_button;
+	
+	if (!empty($dropdown_button)) {
+		echo $dropdown_button;
+	}
+}
+
+add_action('get_footer', 'learndash_get_footer');
+function learndash_get_footer() {
+	if (is_admin()) return;
+
+	global $dropdown_button;
+	if (empty($dropdown_button)) {
+		wp_dequeue_script('jquery-dropdown-js');
+	}
+}
+
 
 
 /**
@@ -338,6 +445,9 @@ function learndash_payment_buttons( $course ) {
  * @return string      output of payment buttons
  */
 function learndash_payment_buttons_shortcode( $attr ) {
+	global $learndash_shortcode_used;
+	$learndash_shortcode_used = true;
+
 	$shortcode_atts = shortcode_atts( array( 'course_id' => 0 ), $attr );
 
 	extract( $shortcode_atts );
@@ -460,9 +570,6 @@ function learndash_remove_comments( $comments, $array ) {
 	return array();
 }
 
-add_filter( 'widget_text', 'do_shortcode' );
-
-
 
 /**
  * Include auto updater file and instantiate nss_plugin_updater_sfwd_lms class
@@ -552,6 +659,27 @@ function learndash_seconds_to_time( $inputSeconds ) {
 	return trim( $return );
 }
 
+/**
+ * Convert a timestamp to locally timezone adjusted output display
+ *
+ * @since 2.2.0
+ *
+ * @param ine		$timestamp
+ * @return string	offset adjusted displayed date/time
+ */
+function learndash_adjust_date_time_display($timestamp = 0) {
+	$date_time_display = '';
+
+	if ($timestamp != 0) {
+		$ld_date_time_formats = apply_filters('learndash_date_time_formats', get_option('date_format') .' '. get_option('time_format'));
+		if (!empty($ld_date_time_formats)) {
+			$ld_date_time_offset = apply_filters('learndash_date_time_offset', get_option('gmt_offset') * 3600);
+			$date_time_display = date_i18n( $ld_date_time_formats, $timestamp + intval($ld_date_time_offset) );
+		}
+	}
+	return $date_time_display;	
+} 
+
 
 /**
  * Check if server is on Microsoft IIS
@@ -604,4 +732,29 @@ function ldp( $msg ) {
 	echo '<pre>';
 	print_r( $msg );
 	echo '</pre>';
+}
+
+/**
+ * Utility function to traverse multidimensional array and apply user function 
+ * 
+ * @since 2.1.2
+ * 
+ * @param function $func callable user defined or system function. This 
+ *			should be 'esc_attr', or some similar function. 
+ * @param array $arr This is the array to traverse and cleanup. 
+ *
+ * @return array $arr cleaned array
+ */
+function array_map_r( $func, $arr) {
+    foreach( $arr as $key => $value ) {
+		if (is_array( $value ) ) {
+			$arr[ $key ] = array_map_r( $func, $value );
+		} else if (is_array($func)) {
+			$arr[ $key ] = call_user_func_array($func, $value);
+		} else {
+			$arr[ $key ] = $func( $value );
+		}
+    }
+
+    return $arr;
 }
